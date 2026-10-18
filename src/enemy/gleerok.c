@@ -22,6 +22,7 @@
 #include "fade.h"
 #ifdef PC_PORT
 #include "port_rom.h"
+#include "port_region_data.h"
 #include <stdio.h>
 #include <stdlib.h>
 #endif
@@ -148,8 +149,8 @@ extern u8 gUnk_080CD854[];
  * arrays and unpack each entry via Port_PackedRomEntry. */
 extern const u8 gUnk_080CD86C[];
 extern const u8 gUnk_080CD878[];
-#define GUNK_080CD86C_PTR(idx) ((const u8*)Port_PackedRomEntry(gUnk_080CD86C, (idx)))
-#define GUNK_080CD878_PTR(idx) ((const u8*)Port_PackedRomEntry(gUnk_080CD878, (idx)))
+#define GUNK_080CD86C_PTR(idx) ((const u8*)Port_ReadRegionDataPointer(gUnk_080CD86C, (idx), 3, 3))
+#define GUNK_080CD878_PTR(idx) ((const u8*)Port_ReadRegionDataPointer(gUnk_080CD878, (idx), 3, 3))
 #else
 extern const u8* gUnk_080CD86C[];
 extern const u8* gUnk_080CD878[];

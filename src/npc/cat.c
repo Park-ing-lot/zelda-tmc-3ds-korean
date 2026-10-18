@@ -15,6 +15,7 @@
 #include "asm.h"
 #ifdef PC_PORT
 #include "../../port/port_rom.h"
+#include "port_region_data.h"
 #endif
 
 typedef struct {
@@ -286,7 +287,7 @@ void sub_08067A0C(CatEntity* this) {
             if (idx >= 8) idx = 7;
             COLLISION_ON(super);
 #ifdef PC_PORT
-            super->hitbox = (Hitbox*)Port_UnpackRomDataPtr(&gUnk_08111154[0], idx);
+            super->hitbox = (Hitbox*)Port_ReadRegionDataPointer(gUnk_08111154, idx, 8, sizeof(Hitbox));
 #else
             super->hitbox = gUnk_08111154[idx];
 #endif

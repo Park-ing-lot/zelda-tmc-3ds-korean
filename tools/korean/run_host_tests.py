@@ -2,8 +2,10 @@
 """Run ROM-free gameplay/save/touch regression tests using the host C compiler."""
 from pathlib import Path
 import os
+import pwd
 import subprocess
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 TESTS = {
@@ -41,9 +43,16 @@ def main():
         command = [os.environ.get('CC', 'cc'), *flags, *defines,
                    *(str(ROOT / src) for src in sources), '-lm', '-o', str(binary)]
         subprocess.run(command, cwd=ROOT, check=True)
-        case_dir = out / (name + '-work')
-        case_dir.mkdir(exist_ok=True)
-        subprocess.run([str(binary)], cwd=case_dir, check=True)
+        # Persistence tests deliberately make directories unwritable. Root
+        # bypasses those permissions, so drop privileges for the test child
+        # in root-owned CI containers. Do not weaken the fault assertions.
+        with tempfile.TemporaryDirectory(prefix=name+'-', dir=out) as directory:
+            options = {}
+            if os.geteuid() == 0:
+                user = pwd.getpwnam('nobody')
+                os.chown(directory, user.pw_uid, user.pw_gid)
+                options = {'user': user.pw_uid, 'group': user.pw_gid, 'extra_groups': []}
+            subprocess.run([str(binary)], cwd=directory, check=True, **options)
     print(f'PASS: {len(TESTS)} host test programs')
 
 if __name__ == '__main__':

@@ -24,12 +24,16 @@ const u8 gUnk_080F9BF8[1];
 const u8 gUnk_080F09A0[1];
 const u8 gUnk_080FEAC8[1];
 const u8 gUnk_080FEE58[1];
+const u8 gUnk_080CC944[16];
+const u8 gUnk_080CD86C[12];
+const u8 gUnk_080CD878[12];
+const u8 gUnk_08111154[32];
 
 #define REGION_ENTITY_LIST(symbol, usa, eu, jp, bytes) const u8 symbol[bytes];
 #include "port_region_entity_lists.inc"
 #undef REGION_ENTITY_LIST
 
-static u8 sRom[0x100000];
+static u8 sRom[0x120000];
 static const u8 sUnknownCompiledData[1];
 static int sFailures;
 
@@ -49,6 +53,17 @@ int main(void) {
     CHECK(Port_ResolveRegionData(gUnk_080DD7E0) == gUnk_080DD7E0, "USA keeps its compiled data");
 
     gActiveRegion = TMC_REGION_JP;
+    CHECK(Port_ResolveRegionData(gUnk_080CD86C) == sRom + 0xCD60C, "JP resolves Gleerok motion pointers");
+    sRom[0xCD60C] = 0x00;
+    sRom[0xCD60D] = 0x20;
+    sRom[0xCD60E] = 0x00;
+    sRom[0xCD60F] = 0x08;
+    CHECK(Port_ReadRegionDataPointer(gUnk_080CD86C, 0, 3, 3) == sRom + 0x2000,
+          "JP reads native target rather than compiled USA pointer");
+    CHECK(Port_ReadRegionDataPointer(gUnk_080CD86C, 3, 3, 3) == NULL, "motion index is bounded");
+    CHECK(Port_ReadRegionDataPointer(gUnk_080CD86C, 0, 3, sizeof(sRom)) == NULL,
+          "full target extent must fit ROM");
+    CHECK(Port_ResolveRegionData(gUnk_08111154) == sRom + 0x110E18, "JP resolves cat hitboxes");
     CHECK(Port_ResolveRegionData(gUnk_080DD7E0) == sRom + 0xDD570, "JP uses native Cloud Tops fight");
     CHECK(Port_ResolveRegionData(gUnk_080DD750 + 0x40) == sRom + 0xDD520, "JP uses native golden rewards");
     CHECK(Port_ResolveRegionData(gUnk_080EAE60) == sRom + 0xEAB90, "JP keeps its longer entity list");

@@ -23,6 +23,10 @@ extern const u8 gUnk_080F9BF8[];
 extern const u8 gUnk_080F09A0[];
 extern const u8 gUnk_080FEAC8[];
 extern const u8 gUnk_080FEE58[];
+extern const u8 gUnk_080CC944[];
+extern const u8 gUnk_080CD86C[];
+extern const u8 gUnk_080CD878[];
+extern const u8 gUnk_08111154[];
 
 #define REGION_ENTITY_LIST(symbol, usa, eu, jp, bytes) extern const u8 symbol[];
 #include "port_region_entity_lists.inc"
@@ -39,6 +43,12 @@ typedef struct {
 } RegionDataEntry;
 
 static const RegionDataEntry sRegionDataEntries[] = {
+    /* Spear Moblin / cat hitboxes and Gleerok's two motion tables. The
+     * packed pointers inside the compiled blobs are USA addresses too. */
+    { gUnk_080CC944, 0xCC06C, 0xCC6E4, 16, 16 },
+    { gUnk_080CD86C, 0xCCF98, 0xCD60C, 12, 12 },
+    { gUnk_080CD878, 0xCCFA4, 0xCD618, 12, 12 },
+    { gUnk_08111154, 0x1108A4, 0x110E18, 32, 32 },
     { gUnk_080D8E50, 0xD85AC, 0xD8BF0, 96, 96 },
     { gUnk_080D9328, 0xD8A84, 0xD90C8, 16, 16 },
     /* Cloud removal and both independently persisted golden rewards must all
@@ -99,4 +109,18 @@ const void* Port_ResolveRegionData(const void* data) {
     }
 
     return data;
+}
+
+const void* Port_ReadRegionDataPointer(const void* table, u32 index, u32 count, u32 targetBytes) {
+    if (!table || index >= count) return NULL;
+    table = Port_ResolveRegionData(table);
+    if (!table || !gRomData) return NULL;
+    if (Port_IsRomDataPointer(table)) {
+        return Port_ResolvePackedRomDataPtrFromRom(gRomData, gRomSize,
+                                                  (u32)((const u8*)table - gRomData), index, targetBytes);
+    }
+    const u32 address = Port_ReadU32((const u8*)table + index * 4u);
+    if (address < 0x08000000u) return NULL;
+    const u32 offset = address - 0x08000000u;
+    return offset <= gRomSize && targetBytes <= gRomSize - offset ? gRomData + offset : NULL;
 }

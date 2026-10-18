@@ -1,5 +1,6 @@
 #ifndef PORT_REGION_DATA_H
 #define PORT_REGION_DATA_H
+#include <stdint.h>
 
 /*
  * Resolve data whose address identifies a compiled USA-baseline blob.
@@ -14,5 +15,9 @@
  * guessing that arbitrary numeric fields are regional flag ordinals.
  */
 const void* Port_ResolveRegionData(const void* data);
+
+/* Read a verified packed pointer table without losing regional provenance.
+ * Counts and target sizes are supplied by the owning data definition. */
+const void* Port_ReadRegionDataPointer(const void* table, uint32_t index, uint32_t count, uint32_t targetBytes);
 
 #endif /* PORT_REGION_DATA_H */

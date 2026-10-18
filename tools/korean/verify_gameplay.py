@@ -154,6 +154,18 @@ def main():
         a,b=0xD85AC+i*16,0xD8BF0+i*16
         assert e[a+4:a+16] == k[b+4:b+16]
         assert rom_pointer(e,u32(e,a),16) == rom_pointer(k,u32(k,b),16)
+    for name,eu,jp,count,size in [('gUnk_080CC944',0xCC06C,0xCC6E4,4,8),
+                                  ('gUnk_080CD86C',0xCCF98,0xCD60C,3,3),
+                                  ('gUnk_080CD878',0xCCFA4,0xCD618,3,3),
+                                  ('gUnk_08111154',0x1108A4,0x110E18,8,8)]:
+        registry=(ROOT/'port/port_region_data.c').read_text()
+        row=re.search(r'\{ '+name+r', (0x[0-9A-F]+), (0x[0-9A-F]+),',registry)
+        assert row and int(row[1],16)==eu and int(row[2],16)==jp
+        for i in range(count):
+            a,b=u32(e,eu+i*4),u32(k,jp+i*4)
+            assert b-a == jp-eu
+            assert rom_pointer(e,a,size) == rom_pointer(k,b,size)
+    print('PASS Gleerok motion, Spear Moblin and cat hitbox tables and all targets')
     assert k[0xF98B0+12] == 0xAA  # native JP Veil Falls/Ezlo hint flag
     print('PASS regional entity/tile lists, cloud reward flags, Goron wall records')
     # Linear command decoding checks every named non-unused script interval.

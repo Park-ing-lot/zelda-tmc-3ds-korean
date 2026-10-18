@@ -14,6 +14,7 @@
 #include "physics.h"
 #ifdef PC_PORT
 #include "port_rom.h"
+#include "port_region_data.h"
 #endif
 
 typedef struct {
@@ -63,7 +64,7 @@ extern const u16 gUnk_080CC7D8[];
 extern const u8 gUnk_080CC944[];
 #include "port_rom.h"
 static const Hitbox* SpearMoblin_ReadHitboxTemplate(u32 index) {
-    return (const Hitbox*)Port_UnpackRomDataPtr(gUnk_080CC944, index);
+    return (const Hitbox*)Port_ReadRegionDataPointer(gUnk_080CC944, index, 4, sizeof(Hitbox));
 }
 #else
 extern const Hitbox* const gUnk_080CC944[];
