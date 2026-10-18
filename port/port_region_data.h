@@ -5,10 +5,10 @@
  * Resolve data whose address identifies a compiled USA-baseline blob.
  *
  * Data read from gRomData is already native to the active ROM and is returned
- * unchanged.  Known compiled blobs are replaced by their verified EU ROM
- * counterpart.  A known blob which does not exist in EU, or whose replacement
+ * unchanged.  Known compiled blobs are replaced by their verified EU/JP ROM
+ * counterpart.  A known blob which does not exist in the active region, or whose replacement
  * is unavailable, returns NULL so callers fail closed instead of interpreting
- * USA fields as EU flags/scripts.
+ * USA fields as regional flags/scripts.
  *
  * Unknown compiled pointers remain unchanged.  This deliberately avoids
  * guessing that arbitrary numeric fields are regional flag ordinals.

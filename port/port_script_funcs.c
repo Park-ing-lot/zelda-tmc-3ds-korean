@@ -1510,6 +1510,11 @@ static const ScriptFuncEntry sScriptFuncTable_JP[] = {
     { 0x080543E9, (void (*)(void))DisableRandomDrops },
     { 0x080543F5, (void (*)(void))EnableRandomDrops },
     { 0x080547ED, (void (*)(void))sub_08054968 },
+    /* Korean BZMJ bytecode calls these Goron wall/synchronization callbacks.
+     * Matched to the ROM routines, not inferred from a regional delta. */
+    { 0x08054D3D, (void (*)(void))sub_08054EB8 },
+    { 0x08054D81, (void (*)(void))sub_08054EFC },
+    { 0x08054DE9, (void (*)(void))sub_08054F64 },
     { 0x0805DC41, (void (*)(void))CreateRepeatedSoundManager },
     { 0x0805DC6D, (void (*)(void))DeleteRepeatedSoundManager },
     { 0x0805E385, (void (*)(void))SetPlayerEventPriority },

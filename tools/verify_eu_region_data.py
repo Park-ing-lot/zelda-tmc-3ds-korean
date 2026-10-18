@@ -71,10 +71,12 @@ def _read_clean_rom(path, profile, game_code):
 def _parse_registry():
     text = REGISTRY.read_text(encoding="utf-8")
     matches = re.findall(
-        r"\{\s*(gUnk_\w+(?:\s*\+\s*0x[0-9A-Fa-f]+)?),\s*(0x[0-9A-Fa-f]+),\s*(0x[0-9A-Fa-f]+)\s*\}",
+        r"\{\s*(gUnk_\w+(?:\s*\+\s*0x[0-9A-Fa-f]+)?),\s*"
+        r"(0x[0-9A-Fa-f]+),\s*(?:0x[0-9A-Fa-f]+),\s*(0x[0-9A-Fa-f]+|[0-9]+),\s*[^}]+\}",
         text,
     )
-    return {name: (int(offset, 16), int(size, 16)) for name, offset, size in matches}
+    return {name: (int(offset, 0), int(size, 0)) for name, offset, size in matches}
+
 
 
 def _parse_integer_macro(text, name):

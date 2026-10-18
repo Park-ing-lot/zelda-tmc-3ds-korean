@@ -25,6 +25,10 @@ const u8 gUnk_080F09A0[1];
 const u8 gUnk_080FEAC8[1];
 const u8 gUnk_080FEE58[1];
 
+#define REGION_ENTITY_LIST(symbol, usa, eu, jp, bytes) const u8 symbol[bytes];
+#include "port_region_entity_lists.inc"
+#undef REGION_ENTITY_LIST
+
 static u8 sRom[0x100000];
 static const u8 sUnknownCompiledData[1];
 static int sFailures;
@@ -45,8 +49,17 @@ int main(void) {
     CHECK(Port_ResolveRegionData(gUnk_080DD7E0) == gUnk_080DD7E0, "USA keeps its compiled data");
 
     gActiveRegion = TMC_REGION_JP;
-    CHECK(Port_ResolveRegionData(gUnk_080DD7E0) == gUnk_080DD7E0,
-          "JP remains unchanged until offsets are independently verified");
+    CHECK(Port_ResolveRegionData(gUnk_080DD7E0) == sRom + 0xDD570, "JP uses native Cloud Tops fight");
+    CHECK(Port_ResolveRegionData(gUnk_080DD750 + 0x40) == sRom + 0xDD520, "JP uses native golden rewards");
+    CHECK(Port_ResolveRegionData(gUnk_080EAE60) == sRom + 0xEAB90, "JP keeps its longer entity list");
+    CHECK(Port_ResolveRegionData(gUnk_080F58A8) == sRom + 0xF55C0, "JP preserves the bomb-bag list");
+#define REGION_ENTITY_LIST(symbol, usa, eu, jp, bytes) \
+    CHECK(Port_ResolveRegionData(symbol) == sRom + jp, "JP " #symbol);
+#include "port_region_entity_lists.inc"
+#undef REGION_ENTITY_LIST
+    gRomSize = 0xEAB90 + 95;
+    CHECK(Port_ResolveRegionData(gUnk_080EAE60) == NULL, "JP checks its own longer list size");
+    gRomSize = sizeof(sRom);
 
     gActiveRegion = TMC_REGION_EU;
     CHECK(Port_ResolveRegionData(gUnk_080D8E50) == sRom + 0xD85AC,
@@ -72,6 +85,11 @@ int main(void) {
     CHECK(Port_ResolveRegionData(sUnknownCompiledData) == sUnknownCompiledData,
           "unknown compiled data is not guessed");
     CHECK(Port_ResolveRegionData(NULL) == NULL, "NULL remains NULL");
+
+#define REGION_ENTITY_LIST(symbol, usa, eu, jp, bytes) \
+    CHECK(Port_ResolveRegionData(symbol) == sRom + eu, "EU " #symbol);
+#include "port_region_entity_lists.inc"
+#undef REGION_ENTITY_LIST
 
     /* The first FallingItemManager must wait on EU F0 and mark EU F1 after
      * pickup; the second must use F2/F3.  These exact bytes are what let an

@@ -604,8 +604,8 @@ void Port_InitDataStubs(void) {
      * are zero. The C code at sub_StateChange_DeepwoodShrineBoss_Main does
      * `LoadRoomEntityList(&gUnk_additional_a_DeepwoodShrineBoss_Main)` to
      * spawn the heart container + warp after the boss dies, so without this
-     * copy the rewards never appear (issue #12). USA addresses; EU/JP would
-     * need different offsets. */
+     * copy the rewards never appear (issue #12). Verified per-region offsets
+     * are shared with the native-list resolver below, preserving script provenance. */
     {
         extern EntityData gUnk_additional_a_DeepwoodShrineBoss_Main;
         extern EntityData gUnk_additional_8_MelarisMine_Main;
@@ -637,81 +637,18 @@ void Port_InitDataStubs(void) {
             const char* name;
             u32 usa_offset;
             u32 eu_offset;
+            u32 jp_offset;
             u32 size;
             u8* dest;
         };
         struct PerRoomEntityListInit entries[] = {
-            { "gUnk_additional_a_DeepwoodShrineBoss_Main", 0xDF94Cu, 0xDF068u, 0x30u,
-              (u8*)&gUnk_additional_a_DeepwoodShrineBoss_Main },
-            /* Melari's Mines main room: state-change loads the additional_8
-             * NPC list (2 minishes + Melari + 2 cutscene swords) and the
-             * additional_9 helper-minish list. With zeroed stubs the
-             * runtime parses 16-byte chunks of zeros as GROUND_ITEM kind=0
-             * entities — visible as duplicate heart containers + green
-             * warp tile in the room (#42), and Melari himself + his crew
-             * never appear (#43). */
-            { "gUnk_additional_8_MelarisMine_Main", 0xDD214u, 0xDC950u, 0x60u,
-              (u8*)&gUnk_additional_8_MelarisMine_Main },
-            { "gUnk_additional_9_MelarisMine_Main", 0xDD274u, 0xDC9B0u, 0x20u,
-              (u8*)&gUnk_additional_9_MelarisMine_Main },
-            /* Per-room state-change additional entity lists. Each one is
-             * loaded by sub_StateChange_<Room>() in roomInit.c via
-             * LoadRoomEntityList() — which iterates EntityData records
-             * until kind==0xFF. Zeroed stubs read kind=0 forever and
-             * crash. Populating from ROM lets the lists terminate
-             * correctly. Crashes covered: #64 (Temple of Droplets big-key
-             * area, BigOcto state-change), #68 (Hyrule Town Romio's
-             * "Purple House"), and others where the post-state-change
-             * room never loaded its real entity list. */
-            { "gUnk_additional_8_DeepwoodShrine_StairsToB1", 0xDE834u, 0xDDF70u, 0x30u,
-              (u8*)&gUnk_additional_8_DeepwoodShrine_StairsToB1 },
-            { "gUnk_additional_8_HouseInteriors1_Library1F", 0xD66F4u, 0xD5E50u, 0x20u,
-              (u8*)&gUnk_additional_8_HouseInteriors1_Library1F },
-            { "gUnk_additional_9_HouseInteriors1_Library1F", 0xD6734u, 0xD5E90u, 0x50u,
-              (u8*)&gUnk_additional_9_HouseInteriors1_Library1F },
-            { "gUnk_additional_8_HyruleCastle_3", 0xD7690u, 0xD6DECu, 0x40u,
-              (u8*)&gUnk_additional_8_HyruleCastle_3 },
-            { "gUnk_additional_a_CaveOfFlamesBoss_Main", 0xE1814u, 0xE0F30u, 0x30u,
-              (u8*)&gUnk_additional_a_CaveOfFlamesBoss_Main },
-            { "gUnk_additional_a_TempleOfDroplets_BigOcto", 0xE49F4u, 0xE40F0u, 0x30u,
-              (u8*)&gUnk_additional_a_TempleOfDroplets_BigOcto },
-            { "gUnk_additional_8_PalaceOfWinds_GyorgTornado", 0xE72E4u, 0xE69E0u, 0x30u,
-              (u8*)&gUnk_additional_8_PalaceOfWinds_GyorgTornado },
-            { "gUnk_additional_9_PalaceOfWinds_GyorgTornado", 0xE7314u, 0xE6A10u, 0x30u,
-              (u8*)&gUnk_additional_9_PalaceOfWinds_GyorgTornado },
-            { "gUnk_additional_c_HouseInteriors2_Romio", 0xF236Cu, 0xF19A0u, 0x20u,
-              (u8*)&gUnk_additional_c_HouseInteriors2_Romio },
-            { "gUnk_additional_9_HouseInteriors2_Percy", 0xF2718u, 0xF1D4Cu, 0x40u,
-              (u8*)&gUnk_additional_9_HouseInteriors2_Percy },
-            { "gUnk_additional_a_HouseInteriors2_Percy", 0xF2758u, 0xF1D8Cu, 0x40u,
-              (u8*)&gUnk_additional_a_HouseInteriors2_Percy },
-            { "gUnk_additional_8_HouseInteriors3_BorlovEntrance", 0xF5F38u, 0xF54F4u, 0x20u,
-              (u8*)&gUnk_additional_8_HouseInteriors3_BorlovEntrance },
-            { "gUnk_additional_9_HouseInteriors3_BorlovEntrance", 0xF5F58u, 0xF5514u, 0x20u,
-              (u8*)&gUnk_additional_9_HouseInteriors3_BorlovEntrance },
-            { "gUnk_additional_a_HouseInteriors3_BorlovEntrance", 0xF5F78u, 0xF5534u, 0x20u,
-              (u8*)&gUnk_additional_a_HouseInteriors3_BorlovEntrance },
-            /* Nine stubs that were never in this table — zero .bss, so the
-             * kind!=0xFF walk ran off the array (ASan: Mayor's house rear
-             * entry, area 0x21) and the real NPCs never spawned: Mayor's
-             * house state change, Mayor's cabin (Minish path), and all
-             * seven Happy Hearth Inn 2F oracle lists (Din/Nayru/Farore
-             * house-renting sidequest). Sizes are measured through each
-             * region's 0xFF terminator. */
-            { "Entities_MinishPaths_MayorsCabin_gUnk_080D6138", 0xD6138u, 0xD5894u, 0x60u,
-              (u8*)&Entities_MinishPaths_MayorsCabin_gUnk_080D6138 },
-            { "Entities_HouseInteriors1_Mayor_080D6210", 0xD6210u, 0xD596Cu, 0x50u,
-              (u8*)&Entities_HouseInteriors1_Mayor_080D6210 },
-            { "UpperInn_Oracles", 0xD6BF4u, 0xD6350u, 0x40u, (u8*)&UpperInn_Oracles },
-            { "UpperInn_NoFarore", 0xD6C34u, 0xD6390u, 0x30u, (u8*)&UpperInn_NoFarore },
-            { "UpperInn_NoDin", 0xD6C64u, 0xD63C0u, 0x30u, (u8*)&UpperInn_NoDin },
-            { "UpperInn_NoNayru", 0xD6C94u, 0xD63F0u, 0x30u, (u8*)&UpperInn_NoNayru },
-            { "UpperInn_Din", 0xD6CC4u, 0xD6420u, 0x20u, (u8*)&UpperInn_Din },
-            { "UpperInn_Nayru", 0xD6CE4u, 0xD6440u, 0x20u, (u8*)&UpperInn_Nayru },
-            { "UpperInn_Farore", 0xD6D04u, 0xD6460u, 0x20u, (u8*)&UpperInn_Farore },
+#define REGION_ENTITY_LIST(symbol, usa, eu, jp, bytes) { #symbol, usa, eu, jp, bytes, (u8*)&symbol },
+#include "port_region_entity_lists.inc"
+#undef REGION_ENTITY_LIST
         };
         for (size_t i = 0; i < sizeof(entries) / sizeof(entries[0]); i++) {
-            const u32 rom_offset = gRomRegion == ROM_REGION_EU ? entries[i].eu_offset : entries[i].usa_offset;
+            const u32 rom_offset = gRomRegion == ROM_REGION_EU ? entries[i].eu_offset
+                                   : gRomRegion == ROM_REGION_JP ? entries[i].jp_offset : entries[i].usa_offset;
             if (rom_offset + entries[i].size <= gRomSize) {
                 memcpy(entries[i].dest, &gRomData[rom_offset], entries[i].size);
                 count++;

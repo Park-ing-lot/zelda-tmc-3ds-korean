@@ -18,6 +18,7 @@ A user-provided gameplay screenshot confirms Korean dialogue during the opening 
 - Adds full-file SHA-256 verification for that ROM in the 3DS frontend, and permits its known trimmed size in the native loader.
 - Reimplements its extended character decoding and relocated glyph-bank lookup in native C.
 - Adjusts variable-width text measurement, two-half glyph rendering, the stylized font lookup, and dialogue symbol palette selection to match the analyzed translation routines.
+- Restores the bottom-screen English tab/settings labels for the Korean ROM profile using the ASCII glyphs retained in its original font banks. Buttons fall back to a labelled rendering when their font is unavailable.
 - Uses a separate experimental application ID (`0004000005A22E00`), product code, and SD directory.
 - Disables upstream automatic update downloads in this fork so an upstream binary cannot replace the Korean implementation.
 - Includes local analysis/test tools and a GitHub Actions build workflow inherited from upstream.
@@ -74,3 +75,8 @@ See the [Korean port plan and evidence](docs/KOREAN_PORT_PLAN.md) for milestones
 The original Git history, licenses and notices are preserved. Original port contributions are under **GPL v3.0 or later**. Third-party components retain their own licenses. See [LICENSE](LICENSE), [COPYRIGHT.md](COPYRIGHT.md), and [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md).
 
 **You must obtain and prepare your own legally obtained, Korean-patched ROM. This repository provides no ROM files, ROM downloads, translation patch files, extracted game assets, saves, or firmware.**
+
+The K0.4 gameplay audit fixes missing Japanese-profile tables, 26 regional room
+lists (including dungeon boss rewards), native script-pointer provenance and
+three missing Goron script callbacks. See [the audit and its verification limits](docs/KOREAN_GAMEPLAY_AUDIT.md).
+This does not claim that a complete ending playthrough has been verified.

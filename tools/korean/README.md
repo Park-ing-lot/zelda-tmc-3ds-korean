@@ -53,3 +53,17 @@ application SD directory every 180 engine frames. For scripted input, write
 probe consumes that file. Captures and saves remain local and must not be
 committed. Use a separate virtual SD for tests; preserve the player's live
 session and saves.
+
+Gameplay and interaction checks:
+
+```sh
+python3 tools/korean/run_host_tests.py --sanitize
+python3 tools/korean/verify_gameplay.py /path/to/KOREAN.gba /path/to/EU.gba-or-zip
+```
+
+The host suite needs a native C compiler and no ROM. The local gameplay audit
+requires the supported ROM revisions and writes no extracted assets. See
+[coverage and limitations](../../docs/KOREAN_GAMEPLAY_AUDIT.md).
+Opt-in diagnostic builds also accept one local `probe-touch.txt` containing
+`x y` in native 320×240 coordinates, and log the actual touch handler's state
+changes/rejections. Production packages exclude all probe hooks.

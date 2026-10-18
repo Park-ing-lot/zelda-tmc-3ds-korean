@@ -185,6 +185,15 @@ void Port_SecondScreen_3DS_GetFrameStats(BottomFrameState3DSStats* out) {
     BottomFrameState3DS_GetStats(&sFrameState, out);
 }
 
+#ifdef TMC_KOREAN_RUNTIME_PROBE
+void Port_SecondScreen_3DS_ProbeUi(int* tab, int* page) {
+    UI_LOCK();
+    *tab = sUi.tab;
+    *page = sUi.settingsPage;
+    UI_UNLOCK();
+}
+#endif
+
 void Port_SecondScreen_3DS_OnTap(int x, int y, int longPress) {
     SecondScreenSnapshot currentSnapshot;
     Port_SecondScreenState_Read(&currentSnapshot);

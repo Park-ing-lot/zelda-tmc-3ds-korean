@@ -53,12 +53,10 @@ jobs:
           cp bannertool-build/bannertool ./bannertool
           chmod +x makerom bannertool
 
-      - name: Check Korean ROM profile and glyph bounds without game data
-        run: |
-          /usr/bin/cc -std=c11 -Wall -Wextra -Werror -Iport tools/korean/profile_test.c -o .tmp/korean-profile-test
-          .tmp/korean-profile-test
-          /usr/bin/cc -std=gnu11 -O2 -DPC_PORT -DMULTI_REGION -DUSA -DENGLISH -I. -Iinclude -Iport -ffunction-sections -fdata-sections tools/korean/bottom_font_test.c -Wl,--gc-sections -lm -o .tmp/korean-bottom-font-test
-          .tmp/korean-bottom-font-test
+      - name: Check Korean profile, regional gameplay, saves and bottom-screen state
+        env:
+          CC: /usr/bin/cc
+        run: python3 tools/korean/run_host_tests.py --sanitize
 
       - name: Build universal CIA and 3DSX
         env:

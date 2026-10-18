@@ -2173,35 +2173,12 @@ void sub_StateChange_CloudTops_Bottom(void) {
     if (CheckLocalFlagB(KUMOUE_02_00)) {
         sub_0809F814(0xe0);
     } else {
-#ifdef PC_PORT
-        if (REGION_IS_JP) {
-            EntityData topFight[PORT_CLOUD_TOPS_FIGHT_ENTITY_COUNT];
-            /* JP offsets are not yet independently verified. Preserve the E4
-             * targeted repair there; EU is resolved to its complete native
-             * list by LoadRoomEntityList. */
-            Port_CloudTopsPrepareTopFightEntities(topFight, &gUnk_080DD7E0);
-            LoadRoomEntityList(topFight);
-        } else {
-            LoadRoomEntityList(&gUnk_080DD7E0);
-        }
-#else
         LoadRoomEntityList(&gUnk_080DD7E0);
-#endif
     }
     if (CheckLocalFlagB(KUMOUE_02_02)) {
         sub_0809F814(0xba3);
     } else {
-#ifdef PC_PORT
-        if (REGION_IS_JP) {
-            EntityData bottomFight[PORT_CLOUD_TOPS_FIGHT_ENTITY_COUNT];
-            Port_CloudTopsPrepareBottomFightEntities(bottomFight, &gUnk_080DD840);
-            LoadRoomEntityList(bottomFight);
-        } else {
-            LoadRoomEntityList(&gUnk_080DD840);
-        }
-#else
         LoadRoomEntityList(&gUnk_080DD840);
-#endif
     }
 }
 

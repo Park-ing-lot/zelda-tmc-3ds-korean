@@ -92,3 +92,20 @@ cannot port custom ARM text-rendering hooks: native C must implement them.
 - Do not upload original/patched ROMs, extracted graphics, screenshots, saves,
   or local runtime dumps. Existing licenses and attribution remain intact.
 - Record test results and unresolved issues here as implementation progresses.
+
+## Bottom-screen labels follow-up (2026-10-18, K0.3)
+
+- User observed empty QUEST/MAP/ITEMS buttons after saving and exiting.
+- Root cause: theme font selection disabled both Latin banks for every JP ROM;
+  the button compositor still returned success for its empty plate, so the
+  caller never drew fallback lettering.
+- The exact Korean profile retains the original Latin glyphs in font banks
+  0 and 8 (validated visually from the user's local ROM). Enable these banks
+  for that profile; keep the unverified clean-JP guard. A nonempty button
+  label with no font now returns failure so the caller paints its labelled
+  fallback.
+- Production font/button tests pass, including a local ROM preview of all
+  three tab labels and synthetic USA/EU/JP/profile selection and missing-font
+  cases. AddressSanitizer/UndefinedBehaviorSanitizer checks also pass.
+- The user's 8 KiB save and settings were backed up locally under the ignored
+  `.tmp/save-backups/` folder before runtime testing. Test with copies only.

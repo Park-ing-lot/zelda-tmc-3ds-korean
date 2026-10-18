@@ -22,6 +22,9 @@ void Port_SecondScreen_3DS_MarkSubmitted(uint32_t generation, int inGame);
 void Port_SecondScreen_3DS_PromoteSubmitted(void);
 void Port_SecondScreen_3DS_GetFrameStats(BottomFrameState3DSStats* out);
 void Port_SecondScreen_3DS_OnTap(int x, int y, int longPress);
+#ifdef TMC_KOREAN_RUNTIME_PROBE
+void Port_SecondScreen_3DS_ProbeUi(int* tab, int* page);
+#endif
 int Port_SecondScreen_3DS_NeedsRefresh(void);
 /* `tick` is the free-running animation tick, `paintedTick` the tick the last
  * scheduled paint used; both are required for the MAP-tab skip signature. */
