@@ -5,6 +5,9 @@
 #include "port_audio_3ds.h"
 #include "port_second_screen_3ds.h"
 #include "port_second_screen_sync_3ds.h"
+#ifdef TMC_KOREAN_RUNTIME_PROBE
+#include "korean_runtime_probe.h"
+#endif
 
 #include <3ds.h>
 #include <stdbool.h>
@@ -403,6 +406,9 @@ bool Platform3DS_BeginFrameBoundary(void) {
 }
 
 void Platform3DS_EndFrameBoundary(void) {
+#ifdef TMC_KOREAN_RUNTIME_PROBE
+    KoreanRuntimeProbe_Frame();
+#endif
     sFrameBoundaryEndTick = svcGetSystemTick();
 }
 
@@ -603,6 +609,9 @@ static void PollInput(void) {
     hidScanInput();
     sHeld = hidKeysHeld();
     sDown = hidKeysDown();
+#ifdef TMC_KOREAN_RUNTIME_PROBE
+    KoreanRuntimeProbe_Input(&sHeld, &sDown);
+#endif
     hidCircleRead(&sCirclePosition);
     if (sIsNew3DS) {
         hidCstickRead(&sCStickPosition);

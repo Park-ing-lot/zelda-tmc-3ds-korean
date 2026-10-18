@@ -10,6 +10,7 @@ endif()
 project(tmc_3ds VERSION "${TMC_3DS_PROJECT_VERSION}" LANGUAGES C CXX)
 
 set(TMC_ROOT "${CMAKE_CURRENT_LIST_DIR}/../..")
+option(TMC_KOREAN_RUNTIME_PROBE "Local emulator screenshots and scripted input (development only)" OFF)
 
 file(GLOB TMC_ACTOR_SOURCES CONFIGURE_DEPENDS
     "${TMC_ROOT}/src/playerItem/*.c"
@@ -121,6 +122,10 @@ target_compile_definitions(tmc-3ds PRIVATE
     TMC_PORT_VERSION="${TMC_3DS_VERSION}" TMC_PC_VERSION="${TMC_3DS_VERSION}"
 )
 target_compile_features(tmc-3ds PRIVATE c_std_11 cxx_std_20)
+if(TMC_KOREAN_RUNTIME_PROBE)
+    target_sources(tmc-3ds PRIVATE source/korean_runtime_probe.c)
+    target_compile_definitions(tmc-3ds PRIVATE TMC_KOREAN_RUNTIME_PROBE)
+endif()
 set_target_properties(tmc-3ds PROPERTIES
     C_STANDARD 11
     C_STANDARD_REQUIRED YES

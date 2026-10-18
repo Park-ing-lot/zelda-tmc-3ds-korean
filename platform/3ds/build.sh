@@ -35,6 +35,7 @@ fi
 cmake -S "${ROOT}/platform/3ds" -B "${BUILD}" \
   -DCMAKE_TOOLCHAIN_FILE="${DEVKITPRO}/cmake/3DS.cmake" \
   -DCMAKE_BUILD_TYPE=Release \
+  -DTMC_KOREAN_RUNTIME_PROBE="${TMC3DS_RUNTIME_PROBE:-OFF}" \
   -DUPDATE_DEPS_ROOT="${UPDATE_DEPS_ROOT:-${DEVKITPRO}/portlibs/3ds}"
 cmake --build "${BUILD}" --parallel "${TMC3DS_JOBS:-4}"
 
