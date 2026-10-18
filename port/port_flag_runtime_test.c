@@ -62,6 +62,20 @@ static void ResetFlags(u32 bank) {
 int main(void) {
     u32 packedTwoBits = 10u | (1u << 10);
 
+    gActiveRegion = TMC_REGION_JP;
+    ResetFlags(FLAG_BANK_1);
+    SetLocalFlagB(KUMOUE_02_00);
+    CHECK(ReadBit(gSave.flags, FLAG_BANK_1 + 0xF0), "JP Cloud Tops agrees with the native fight/reward byte");
+    CHECK(!ReadBit(gSave.flags, FLAG_BANK_1 + KUMOUE_02_00), "JP never writes the compiled USA cloud bit");
+    CHECK(CheckLocalFlagB(KUMOUE_02_00), "JP semantic read observes the native cloud bit");
+    ClearLocalFlagB(KUMOUE_02_00);
+    CHECK(!ReadBit(gSave.flags, FLAG_BANK_1 + 0xF0), "JP clear uses the same native bit");
+    ResetFlags(FLAG_BANK_10);
+    SetLocalFlagB(LV6_GUFUU1_DEMO);
+    SetLocalFlagB(LV6_GUFUU2_DEAD);
+    CHECK(ReadBit(gSave.flags, FLAG_BANK_10 + 0x78) && ReadBit(gSave.flags, FLAG_BANK_10 + 0x7B),
+          "JP finale prerequisites and completion retain their native ordinals");
+
     gActiveRegion = TMC_REGION_EU;
     ResetFlags(FLAG_BANK_1);
     CHECK(Port_RemapBaselineLocalFlag(FLAG_BANK_1, KUMOUE_02_00) == 240,

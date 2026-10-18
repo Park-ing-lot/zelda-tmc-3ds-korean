@@ -136,6 +136,26 @@ def main():
         assert a == k[jp:jp+size], name
         assert a[-16] == 255, name + ': missing terminator'
     print('PASS all 26 additional room lists, named script relocations and terminators')
+    # Audit every raw compiled entity list loaded directly by roomInit.c.
+    source=(ROOT/'port/data_const_stubs.c').read_text()
+    room_code=(ROOT/'src/roomInit.c').read_text()
+    names=set(re.findall(r'LoadRoomEntityList\(&?(gUnk_08[0-9A-Fa-f]+)\)',room_code))
+    exact=0
+    for name in sorted(names):
+        match=re.search(r'const u8 '+name+r'\[\d+\][^=]*= \{(.*?)\};',source,re.S)
+        assert match, name
+        data=bytes(int(n,16) for n in re.findall(r'0x([0-9A-Fa-f]{2})',match[1]))
+        end=next((i+16 for i in range(0,len(data)-15,16) if data[i]==255),None)
+        assert end, name + ': unterminated compiled list'
+        data=relocate_scripts(data[:end],usa_to_jp)
+        origin=int(name[6:],16)&0xFFFFFF
+        found=k.find(data,max(0,origin-0x1200),origin+0x1200)
+        if name not in ('gUnk_080DD7E0','gUnk_080DD840'):
+            assert found >= 0, name + ': unreviewed regional entity difference'
+            exact += 1
+    assert exact == 233
+    print('PASS 235 direct room-init lists: 233 exact after script relocation; 2 native cloud lists')
+
 
     # Known divergent compiled lists: compare to the source USA blob, replacing
     # only named script pointers. Region-specific flag bytes are checked separately.

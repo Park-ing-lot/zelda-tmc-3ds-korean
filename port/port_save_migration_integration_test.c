@@ -22,6 +22,7 @@
 #include "port_types.h"
 #include "region.h"
 #include "save.h"
+#include "sound.h"
 
 #define EEPROM_SIZE 0x2000u
 #define EEPROM_BLOCK_SIZE 8u
@@ -40,6 +41,17 @@ extern u16 EEPROMConfigure(u16 type);
 extern void Port_Save_TestResetMemory(void);
 
 int gActiveRegion = TMC_REGION_USA;
+
+/* GCC ASan retains the uncalled save-screen handler table as an instrumented
+ * global. Supply its engine dependencies even though this fixture exercises
+ * ReadSaveFile, not the animated save screen. Unexpected calls must fail. */
+SaveFile gSave;
+SoundPlayingInfo gSoundPlayingInfo;
+u8 _gMenuSharedStorage[0x40];
+u8 gEwram[0x40000];
+void InitDMA(void) { abort(); }
+void InitVBlankDMA(void) { abort(); }
+void sub_08050384(void) { abort(); }
 
 static int sFailures;
 
