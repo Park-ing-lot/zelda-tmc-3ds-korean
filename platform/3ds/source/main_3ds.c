@@ -121,18 +121,19 @@ int main(int argc, char** argv) {
         char message[512];
         if (romResult < 0) {
             snprintf(message, sizeof(message),
-                     "None of the .gba files in:\n%s\n"
-                     "is a supported Korean, USA or Europe ROM.\n\n"
-                     "Korean SHA-1: 5dfc388f30bec4db3965632cca8fe1a97d9c9f79\n"
-                     "Expected SHA-1:\nUSA: b4bd50e4131b027c334547b4524e2dbbd4227130\n"
-                     "Europe: cff199b36ff173fb6faf152653d1bccf87c26fb7",
+                     "No compatible Korean ROM found.\n\n"
+                     "Put your Korean-patched .gba ROM in:\n%s/\n\n"
+                     "Example filename: game.gba\n\n"
+                     "Check README for the supported ROM.\n"
+                     "You must prepare the ROM yourself.",
                      APP_DIR);
         } else {
             snprintf(message, sizeof(message),
-                     "Copy your Korean, USA or Europe ROM to:\n%s\n\nAny .gba filename is accepted.\n\n"
-                     "Korean SHA-1: 5dfc388f30bec4db3965632cca8fe1a97d9c9f79\n"
-                     "Expected SHA-1:\nUSA: b4bd50e4131b027c334547b4524e2dbbd4227130\n"
-                     "Europe: cff199b36ff173fb6faf152653d1bccf87c26fb7",
+                     "Put your Korean-patched .gba ROM in:\n%s/\n\n"
+                     "Example filename: game.gba\n"
+                     "Any .gba filename is accepted.\n\n"
+                     "You must prepare the ROM yourself.\n"
+                     "No ROM is included with this app.",
                      APP_DIR);
         }
         Platform3DS_ShowFatal(romResult < 0 ? "Unsupported ROM" : "ROM not found", message);

@@ -35,13 +35,16 @@ jobs:
         run: |
           mkdir -p .tmp/cia-tools
           cd .tmp/cia-tools
-          curl -fL --retry 3 -o makerom.zip https://github.com/3DSGuy/Project_CTR/releases/download/makerom-v0.19.0/makerom-v0.19.0-ubuntu_x86_64.zip
-          curl -fL --retry 3 -o bannertool.tar.gz https://github.com/carstene1ns/3ds-bannertool/releases/download/1.2.3/bannertool-1.2.3-linux.tar.gz
-          echo '287b809dec064e0ad597e3d272c49ecb7eed41693d5ee6fef9d8a8aa24c2497e  makerom.zip' | sha256sum -c -
-          echo '748519d200519db18e9fd00c332ac32f5411e41230258291e89953a76c1f7155  bannertool.tar.gz' | sha256sum -c -
-          unzip makerom.zip
+          git clone --depth 1 --branch makerom-v0.19.0 https://github.com/3DSGuy/Project_CTR.git project-ctr
+          test "$(git -C project-ctr rev-parse HEAD)" = e8f5f529c54ff9b22a2491a480ffa69206bf7b19
+          curl -fL --retry 3 -o bannertool.tar.gz https://github.com/carstene1ns/3ds-bannertool/releases/download/1.2.3/bannertool-1.2.3.tar.gz
+          echo '3ae61ff21c7762e75ba37a57f248cc0d6a9d4bff92207c57f7420a86dfbd08e6  bannertool.tar.gz' | sha256sum -c -
+          make -C project-ctr/makerom --jobs=2 CC=/usr/bin/cc CXX=/usr/bin/c++
+          cp project-ctr/makerom/bin/makerom ./makerom
           tar -xzf bannertool.tar.gz
-          cp bannertool-1.2.3-linux/bannertool ./bannertool
+          cmake -S bannertool-1.2.3 -B bannertool-build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/usr/bin/c++
+          cmake --build bannertool-build --parallel 2
+          cp bannertool-build/bannertool ./bannertool
           chmod +x makerom bannertool
 
       - name: Build universal CIA and 3DSX
