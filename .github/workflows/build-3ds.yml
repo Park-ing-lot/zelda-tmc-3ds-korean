@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: 3ds-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Nintendo 3DS packages
@@ -27,7 +31,22 @@ jobs:
             command -v "$tool"
           done
 
+      - name: Prepare pinned CIA packaging tools
+        run: |
+          mkdir -p .tmp/cia-tools
+          cd .tmp/cia-tools
+          curl -fL --retry 3 -o makerom.zip https://github.com/3DSGuy/Project_CTR/releases/download/makerom-v0.19.0/makerom-v0.19.0-ubuntu_x86_64.zip
+          curl -fL --retry 3 -o bannertool.tar.gz https://github.com/carstene1ns/3ds-bannertool/releases/download/1.2.3/bannertool-1.2.3-linux.tar.gz
+          echo '287b809dec064e0ad597e3d272c49ecb7eed41693d5ee6fef9d8a8aa24c2497e  makerom.zip' | sha256sum -c -
+          echo '748519d200519db18e9fd00c332ac32f5411e41230258291e89953a76c1f7155  bannertool.tar.gz' | sha256sum -c -
+          unzip makerom.zip
+          tar -xzf bannertool.tar.gz
+          cp bannertool-1.2.3-linux/bannertool ./bannertool
+          chmod +x makerom bannertool
+
       - name: Build universal CIA and 3DSX
+        env:
+          TMC3DS_TOOLS_ROOT: ${{ github.workspace }}/.tmp/cia-tools
         run: ./platform/3ds/build.sh
 
       - name: Verify build outputs and legal files
@@ -37,11 +56,7 @@ jobs:
           ! git ls-files | grep -Ei '(^|/)([^/]*\.gba|[^/]*\.sav|[^/]*\.ppu1|tmc3ds\.log|bugreport_.*)(/|$)'
           ! git ls-files | grep -E '(^|/)(AGENTS\.md|PROTOCOL\.md|WORKFLOW\.md|GITHUB_RELEASE_WORKFLOW\.md)$'
           test -f "build-3ds/game/tmc-3ds-v${VERSION}.3dsx"
-          if [ -f "build-3ds/game/tmc-3ds-v${VERSION}.cia" ]; then
-            echo "CIA package was built."
-          else
-            echo "CIA package skipped because makerom/bannertool are unavailable in CI."
-          fi
+          test -f "build-3ds/game/tmc-3ds-v${VERSION}.cia"
 
       - name: Upload packages
         uses: actions/upload-artifact@v7

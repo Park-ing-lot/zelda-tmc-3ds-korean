@@ -20,7 +20,7 @@ Initial Korean text and ROM-loading changes have been implemented. Cross-compila
 - Disables upstream automatic update downloads in this fork so an upstream binary cannot replace the Korean implementation.
 - Includes local analysis/test tools and a GitHub Actions build workflow inherited from upstream.
 
-These changes are compatibility work. This repository does **not** claim authorship of the original game, the native port, or the Korean translation. The Korean translation's author/version has not yet been identified from reliable documentation; its text and graphics are not included here.
+These changes port the native engine to work with an existing Korean-patched ROM. This repository does **not** claim authorship of the original game, the native port, or the Korean translation. The translation and its game assets are not included here.
 
 ## Supported input under investigation
 
@@ -62,9 +62,8 @@ See the [Korean port plan and evidence](docs/KOREAN_PORT_PLAN.md) for milestones
 - **[samyost1/tmc-android](https://github.com/samyost1/tmc-android)** — the dual-screen Android source base credited by upstream.
 - **[Project Picori](https://github.com/999sian/tmc)** and **[zeldaret/tmc](https://github.com/zeldaret/tmc)** — native port infrastructure and the original decompilation, respectively, as credited by upstream.
 - **ipatix and agbplay contributors** — audio library, under LGPL v3.0; see the bundled notices.
-- **Korean fan translation creators** — authors of the user-supplied translated ROM's Korean text, glyphs and patch code; precise credit is pending identification. We claim no ownership of their work.
 - **Park-ing-lot / this fork** — the Korean compatibility investigation and changes listed above, developed with assistance from Codex.
 
 The original Git history, licenses and notices are preserved. Original port contributions are under **GPL v3.0 or later**. Third-party components retain their own licenses. See [LICENSE](LICENSE), [COPYRIGHT.md](COPYRIGHT.md), and [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md).
 
-**No ROMs, extracted Nintendo or translation assets, saves, or firmware are distributed by this repository.** Supply your own legally obtained game data locally.
+**You must obtain and prepare your own legally obtained, Korean-patched ROM. This repository provides no ROM files, ROM downloads, translation patch files, extracted game assets, saves, or firmware.**
