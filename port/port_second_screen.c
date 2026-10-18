@@ -2850,7 +2850,7 @@ static void PaintTabBar(const SSurf* s, TargetList* tl, float u, int32_t ts, int
  * average with ~89 ms peaks, which is the largest CPU cost left on the Old 3DS,
  * but the total alone does not say which phase to attack -- and guessing that
  * from reading the code is how earlier optimisation attempts went wrong. */
-extern unsigned long long Platform3DS_SystemTick(void);
+extern uint64_t Platform3DS_SystemTick(void);
 enum { SS_PHASE_BACKDROP, SS_PHASE_PANEL, SS_PHASE_SIDEBAR, SS_PHASE_TABBAR, SS_PHASE_COUNT };
 static unsigned long long sSsPhaseTicks[SS_PHASE_COUNT];
 static unsigned long long sSsPhaseMax[SS_PHASE_COUNT];
