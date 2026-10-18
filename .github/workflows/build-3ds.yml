@@ -53,6 +53,11 @@ jobs:
           cp bannertool-build/bannertool ./bannertool
           chmod +x makerom bannertool
 
+      - name: Check Korean ROM profile and glyph bounds without game data
+        run: |
+          /usr/bin/cc -std=c11 -Wall -Wextra -Werror -Iport tools/korean/profile_test.c -o .tmp/korean-profile-test
+          .tmp/korean-profile-test
+
       - name: Build universal CIA and 3DSX
         env:
           TMC3DS_TOOLS_ROOT: ${{ github.workspace }}/.tmp/cia-tools

@@ -6,9 +6,9 @@ This is an **experimental fork** of [EstebanPdN/zelda-tmc-3ds](https://github.co
 
 ## Current status
 
-**Development prototype. Not yet verified to boot or play correctly on a 3DS.**
+**Development prototype. Early gameplay and Korean dialogue have been observed in Azahar; real 3DS hardware has not yet been tested.**
 
-Initial Korean text and ROM-loading changes have been implemented. Cross-compilation and local comparisons against the translation's original ARM text routines are in progress. A successful build alone will not establish that the game is playable. Hardware testing, progression, saving/loading, and full Korean text coverage remain open.
+The initial Korean changes build to CIA and 3DSX. Local comparisons of the production C code against the translation's original ARM routines pass 18,825 cases covering character decoding, glyph addresses, stylized lookup, and variable-width measurement. A user-provided gameplay screenshot confirms Korean dialogue during the opening house event in Azahar 2126.2, whose status bar reports 60 FPS. This is an early runtime check, not a full-game compatibility claim. Hardware testing, later progression, saving/loading, and full Korean text coverage remain open.
 
 ## What this fork changes
 
@@ -35,13 +35,15 @@ Other Korean patches and the clean Japanese ROM are not currently accepted by th
 
 ## Experimental installation target
 
-Once a build has passed compilation, its CIA may be installed through FBI or its 3DSX launched through the Homebrew Launcher on an appropriately configured system. Put your own matching `.gba` file in:
+Install the CIA through FBI or launch the 3DSX through the Homebrew Launcher on an appropriately configured system. Real-hardware compatibility is still unverified. Put your own matching `.gba` file in:
 
 ```text
 sdmc:/3ds/The Minish Cap 3DS Korean/
 ```
 
 Use the separate Korean directory; the original upstream application's directory is different. This is a homebrew application, not a retail-signed title. No stock-firmware installation or Korean-hardware compatibility has been demonstrated yet. Builds never contain a ROM.
+
+The generated 3DSX icon metadata includes Korea in its region mask. The CIA uses title ID `0004000005A22E00` and product code `CTR-P-TMCK`; these differ from the upstream application. Upstream automatic update checks/downloads are disabled. Updates for this experimental fork are installed manually.
 
 ## Build and development
 
@@ -53,6 +55,8 @@ The 3DS build uses upstream's devkitPro/devkitARM, libctru, Citro2D/Citro3D and 
 
 Outputs use the experimental version from `platform/3ds/version.txt` and are placed in `build-3ds/game/`. Automated builds are available under [Actions](https://github.com/Park-ing-lot/zelda-tmc-3ds-korean/actions). Availability of an artifact does not imply runtime validation.
 
+The optional `runtime_probe` workflow input produces a separately named **development** artifact with SD-based screen capture and scripted test input. Normal `tmc-3ds-packages` builds exclude that diagnostic code.
+
 See the [Korean port plan and evidence](docs/KOREAN_PORT_PLAN.md) for milestones, known gaps, and test results. The [archived upstream README](docs/UPSTREAM_README.md) documents the original project's features and installation; it is not a statement of this fork's test coverage.
 
 ## Attribution and license
@@ -62,6 +66,7 @@ See the [Korean port plan and evidence](docs/KOREAN_PORT_PLAN.md) for milestones
 - **[samyost1/tmc-android](https://github.com/samyost1/tmc-android)** — the dual-screen Android source base credited by upstream.
 - **[Project Picori](https://github.com/999sian/tmc)** and **[zeldaret/tmc](https://github.com/zeldaret/tmc)** — native port infrastructure and the original decompilation, respectively, as credited by upstream.
 - **ipatix and agbplay contributors** — audio library, under LGPL v3.0; see the bundled notices.
+- **Francine** — the pre-existing Korean fan translation. The supplied ROM contains a `Francine` credit in its translated text data at file offset `0xE6089C`; the [Korean translation catalog](https://www.hangulogame.com/platform/gba/) and [historical translation listing](https://windowstiger.tistory.com/534) also credit Francine. This fork adapts the native port to that patched ROM; it does not create or distribute the translation.
 - **Park-ing-lot / this fork** — the Korean compatibility investigation and changes listed above, developed with assistance from Codex.
 
 The original Git history, licenses and notices are preserved. Original port contributions are under **GPL v3.0 or later**. Third-party components retain their own licenses. See [LICENSE](LICENSE), [COPYRIGHT.md](COPYRIGHT.md), and [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md).

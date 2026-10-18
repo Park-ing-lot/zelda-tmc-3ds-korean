@@ -30,3 +30,10 @@ Nintendo's intellectual property, which remains owned by Nintendo.
 Nintendo 3DS port maintenance modifications: 2026-10-02, Esteban PDN.
 Normal-save legacy metadata compatibility fix: 2026-10-04, Esteban PDN.
 Corresponding source: https://github.com/EstebanPdN/zelda-tmc-3ds
+
+Korean ROM compatibility modifications: 2026-10-18, Park-ing-lot.
+This fork adapts the existing native port to a separately supplied Korean
+fan-translated ROM. It does not claim authorship of the original game, the
+upstream port, or the Korean translation. Original compatibility changes in
+this fork are provided under the same GPL-3.0-or-later terms.
+Corresponding fork source: https://github.com/Park-ing-lot/zelda-tmc-3ds-korean

@@ -49,8 +49,37 @@ cannot port custom ARM text-rendering hooks: native C must implement them.
 
 - Upstream cloned at `c8fc571`; input sizes, hashes and header regions verified.
 - GitHub CLI authenticated as `Park-ing-lot`.
-- Local machine has no devkitPro, CMake, or 3DS emulator installed. Use GitHub
-  Actions for the first cross-build; hardware testing requires the user's 3DS.
+- Public repository is now a **GitHub fork** with parent
+  `EstebanPdN/zelda-tmc-3ds` (verified through the GitHub API). The first
+  standalone work repository was retained as an archived backup.
+- Production C text routines pass **18,825 comparisons** against the supplied
+  ROM's ARM code using Unicorn: 2,185 decoding cases, 8,192 glyph lookups,
+  8,192 stylized lookups and 256 width measurements. Only the GBA DMA memory
+  copy hardware effect is substituted in the ARM harness.
+- Korean translation credit: the supplied ROM itself contains `Francine` at
+  offset `0xE6089C`. This corroborates the historical listings at
+  https://windowstiger.tistory.com/534 and
+  https://www.hangulogame.com/platform/gba/ . No ROM or patch was downloaded.
+- CIA and 3DSX cross-build succeeded (runtime-probe run `39104123326`). The
+  makerom/bannertool compatibility issue was resolved by compiling pinned
+  sources inside CI. Normal builds exclude the runtime-probe source.
+- Package metadata checked locally: CIA title `0004000005A22E00`, product
+  `CTR-P-TMCK`; 3DSX SMDH region mask `0xFFFFFFFF` includes Korea.
+- Azahar 2126.2 with Korean region settings loads the ROM and creates its
+  settings/save files; this is not yet proof of correct rendered gameplay.
+  macOS screen capture/accessibility are unavailable in this session. An
+  explicitly enabled runtime-probe build captures the emulated screens to
+  local SD and accepts scripted test inputs; normal builds omit this code.
+- The user supplied a screenshot of actual early gameplay: the opening house
+  event with Zelda and the smith renders Korean dialogue; Azahar reports
+  60 FPS. This supersedes the earlier boot-unverified status. Do not interpret
+  it as confirmation of later events, save/reload, or real-hardware behavior.
+- Synthetic profile/bounds tests pass locally with AddressSanitizer and
+  UndefinedBehaviorSanitizer. They cover short headers, incorrect profile
+  signatures, malformed glyph pointers and final-glyph ROM bounds.
+- Local devkitPro/CMake are absent; cross-builds use GitHub Actions. Azahar
+  was downloaded into the ignored `.tmp/` folder for local checks. Real
+  hardware testing requires the user's 3DS.
 - This remains an experimental port until the runtime checks above pass.
 
 ## Working rules
