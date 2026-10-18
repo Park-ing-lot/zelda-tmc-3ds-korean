@@ -271,7 +271,8 @@ int32_t Port_SecondScreenTheme_BigTextWidth(const char* str, int32_t scale);
  * keyline and blue lettering the SLEEP / SAVE buttons use. Draws the frame
  * fitted to the rect and the label centered in the game's button font.
  * `pressed` draws the button's own active/held state. Returns 1 when the
- * authentic art was used, 0 while it isn't decoded (caller falls back). */
+ * authentic art and requested label are available, 0 when either is
+ * unavailable (caller draws its labelled fallback). */
 int Port_SecondScreenTheme_DrawMenuButton(uint32_t* pixels, int32_t bufW, int32_t bufH, int32_t stride,
                                           int32_t x, int32_t y, int32_t w, int32_t h, const char* label,
                                           int pressed);

@@ -294,6 +294,18 @@ static uint32_t sMsgPal[16];
  * palette (sBigPal below). */
 static const u8* sBigFontGlyphs = NULL;
 static int sBigFontOk = 0;
+
+static void SelectLatinFontBanks(void) {
+    /* The analyzed Korean patch retains the original ASCII glyphs in these
+     * two JP banks, including the upper/lowercase letters and numbers used
+     * by the port's own labels. Keep the unverified retail-JP guard, but
+     * allow this known profile to render the bottom-screen interface. */
+    const int latinAvailable = !REGION_IS_JP || gPortKoreanRom;
+    sFontGlyphs = (const u8*)gUnk_08109248[0];
+    sBigFontGlyphs = (const u8*)gUnk_08109248[8];
+    sFontOk = sFontGlyphs != NULL && latinAvailable;
+    sBigFontOk = sBigFontGlyphs != NULL && latinAvailable;
+}
 static uint32_t sBigPal[SS_TEXT_STYLE_COUNT][16]; /* value -> RGBA, 0 = skip */
 
 /* Menu button: the composed SAVE plate, the sub-rect of it the plate itself
@@ -1024,18 +1036,15 @@ static void BuildMenuTheme(void) {
         }
     }
 
-    /* Message font: glyph bank 0 plus the style LUT pairs. Bank 0 is
-     * the latin/ASCII face on USA and EU (sub_0805F25C routes plain A-Z
-     * there for every EU language); the JP ROM's bank 0 is its own script,
-     * so JP keeps the procedural label fallback instead of mojibake. */
+    SelectLatinFontBanks();
+
+    /* Message font: the supported profile's ASCII cells plus style LUTs. */
     {
         static const u8 kStyleFill[SS_TEXT_STYLE_COUNT] = { 7, 5, 5, 5, 7 };
         static const u8 kStyleColor[SS_TEXT_STYLE_COUNT] = { 0, 0, 1, 2, 0 };
-        sFontGlyphs = (const u8*)gUnk_08109248[0];
         for (i = 0; i < SS_TEXT_STYLE_COUNT; i++) {
             memcpy(sTextLut[i], TextLutPtr(kStyleFill[i], kStyleColor[i]), 32);
         }
-        sFontOk = sFontGlyphs != NULL && !REGION_IS_JP;
     }
 
     /* Stylized banner font (bank 8) + its per-style color tables. The
@@ -1044,7 +1053,7 @@ static void BuildMenuTheme(void) {
      * span covers it); the other styles recolor the glyph value roles
      * (see the sBigFontGlyphs comment) with message-palette colors so the
      * same letterforms read as ink/red/green/navy on light surfaces.
-     * Same JP guard as bank 0: the JP stylized bank is kana. */
+     * Bank selection and the regional guard are shared with the small font. */
     {
         uint32_t bank1[16];
         for (i = 0; i < 16; i++) {
@@ -1068,8 +1077,6 @@ static void BuildMenuTheme(void) {
         sBigPal[SS_TEXT_NAVY][12] = sBigPal[SS_TEXT_NAVY][13] = sBigPal[SS_TEXT_NAVY][10] =
             sBigPal[SS_TEXT_NAVY][11] = bank1[2];
         sColors[SSC_BANNER_NAVY] = bank1[1];
-        sBigFontGlyphs = (const u8*)gUnk_08109248[8];
-        sBigFontOk = sBigFontGlyphs != NULL && !REGION_IS_JP;
     }
 }
 
@@ -2187,6 +2194,11 @@ int Port_SecondScreenTheme_DrawMenuButton(uint32_t* pixels, int32_t bufW, int32_
     int32_t ls, textW = 0, tx, ty;
 
     if (!sBuilt || !sBtnOk || pixels == NULL || w <= 0 || h <= 0) {
+        return 0;
+    }
+    /* The caller's fallback also paints the label. Do not report success
+     * with only an empty plate when this profile has no usable font. */
+    if (label != NULL && label[0] != '\0' && !sBigFontOk) {
         return 0;
     }
 

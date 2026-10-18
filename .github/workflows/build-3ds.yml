@@ -57,6 +57,8 @@ jobs:
         run: |
           /usr/bin/cc -std=c11 -Wall -Wextra -Werror -Iport tools/korean/profile_test.c -o .tmp/korean-profile-test
           .tmp/korean-profile-test
+          /usr/bin/cc -std=gnu11 -O2 -DPC_PORT -DMULTI_REGION -DUSA -DENGLISH -I. -Iinclude -Iport -ffunction-sections -fdata-sections tools/korean/bottom_font_test.c -Wl,--gc-sections -lm -o .tmp/korean-bottom-font-test
+          .tmp/korean-bottom-font-test
 
       - name: Build universal CIA and 3DSX
         env:
