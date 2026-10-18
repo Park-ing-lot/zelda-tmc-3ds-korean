@@ -175,6 +175,8 @@ android/app/build/
 
 # Nintendo 3DS port build and emulator diagnostics
 build-3ds/
+.venv/
+!tools/korean/*.py
 *.ppu1
 tmc3ds.log
 
