@@ -39,7 +39,8 @@ jobs:
           test "$(git -C project-ctr rev-parse HEAD)" = e8f5f529c54ff9b22a2491a480ffa69206bf7b19
           curl -fL --retry 3 -o bannertool.tar.gz https://github.com/carstene1ns/3ds-bannertool/releases/download/1.2.3/bannertool-1.2.3.tar.gz
           echo '3ae61ff21c7762e75ba37a57f248cc0d6a9d4bff92207c57f7420a86dfbd08e6  bannertool.tar.gz' | sha256sum -c -
-          make -C project-ctr/makerom --jobs=2 CC=/usr/bin/cc CXX=/usr/bin/c++
+          make -C project-ctr/makerom deps --jobs=2 CC=/usr/bin/cc CXX=/usr/bin/c++
+          make -C project-ctr/makerom program --jobs=2 CC=/usr/bin/cc CXX=/usr/bin/c++
           cp project-ctr/makerom/bin/makerom ./makerom
           tar -xzf bannertool.tar.gz
           cmake -S bannertool-1.2.3 -B bannertool-build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=/usr/bin/c++
