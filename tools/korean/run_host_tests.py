@@ -10,6 +10,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[2]
 TESTS = {
     'profile': ['tools/korean/profile_test.c'],
+    'bottom_touch': ['tools/korean/bottom_touch_test.c', 'platform/3ds/source/bottom_frame_state_3ds.c'],
     'bottom_font': ['tools/korean/bottom_font_test.c'],
     'region_runtime': ['port/port_region_runtime_data_test.c', 'port/port_offset_remap.c'],
     'region_data': ['port/port_region_data_test.c', 'port/port_region_data.c'],

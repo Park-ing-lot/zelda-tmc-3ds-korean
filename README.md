@@ -10,7 +10,12 @@ This is an **experimental fork** of [EstebanPdN/zelda-tmc-3ds](https://github.co
 
 The initial Korean changes build to CIA and 3DSX. Local comparisons of the production C code against the translation's original ARM routines pass 18,825 cases covering character decoding, glyph addresses, stylized lookup, and variable-width measurement. Another 62,756 text comparisons using the clean European ROM match the unmodified upstream C implementation. These are text-system tests, not full-game regression tests.
 
-A user-provided gameplay screenshot confirms Korean dialogue during the opening house event in Azahar 2126.2, whose status bar reports 60 FPS. This is an early runtime check, not a full-game compatibility claim. Hardware testing, later progression, saving/loading, and full Korean text coverage remain open.
+A user-provided gameplay screenshot confirms Korean dialogue during the opening house event in Azahar 2126.2, whose status bar reports 60 FPS. This is an early runtime check, not a full-game compatibility claim. A separate K0.3 diagnostic run also loaded a copy of the user’s saved slot and displayed the bottom tab labels correctly. Hardware testing, full later progression and full Korean text coverage remain open.
+
+The K0.4 gameplay audit fixes missing Japanese-profile tables, 26 regional room
+lists (including dungeon boss rewards), native script-pointer provenance and
+three missing Goron script callbacks. See [the audit and its verification limits](docs/KOREAN_GAMEPLAY_AUDIT.md).
+This does not claim that a complete ending playthrough has been verified.
 
 ## What this fork changes
 
@@ -75,8 +80,3 @@ See the [Korean port plan and evidence](docs/KOREAN_PORT_PLAN.md) for milestones
 The original Git history, licenses and notices are preserved. Original port contributions are under **GPL v3.0 or later**. Third-party components retain their own licenses. See [LICENSE](LICENSE), [COPYRIGHT.md](COPYRIGHT.md), and [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md).
 
 **You must obtain and prepare your own legally obtained, Korean-patched ROM. This repository provides no ROM files, ROM downloads, translation patch files, extracted game assets, saves, or firmware.**
-
-The K0.4 gameplay audit fixes missing Japanese-profile tables, 26 regional room
-lists (including dungeon boss rewards), native script-pointer provenance and
-three missing Goron script callbacks. See [the audit and its verification limits](docs/KOREAN_GAMEPLAY_AUDIT.md).
-This does not claim that a complete ending playthrough has been verified.

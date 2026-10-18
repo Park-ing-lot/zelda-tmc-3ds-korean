@@ -54,6 +54,10 @@ int BottomFrameState3DS_NeedsPaint(const BottomFrameState3DS* state);
 void BottomFrameState3DS_MarkSubmitted(BottomFrameState3DS* state, uint32_t generation, int inGame);
 int BottomFrameState3DS_PromoteSubmitted(BottomFrameState3DS* state);
 int BottomFrameState3DS_CanDispatchTouch(BottomFrameState3DS* state, int currentInGame);
+/* The adapter may establish exact equality with the visible target list for
+ * a panel whose animation does not change input semantics. */
+int BottomFrameState3DS_CanDispatchTouchWithMatchingTargets(BottomFrameState3DS* state, int currentInGame,
+                                                           int targetsMatch);
 int BottomFrameState3DS_VisibleModeMatches(const BottomFrameState3DS* state, int currentInGame);
 int BottomFrameState3DS_ShouldSchedulePaint(int workerPending, int forcedUpdate, int cadenceDue,
                                            int justPromoted, int snapshotChanged,

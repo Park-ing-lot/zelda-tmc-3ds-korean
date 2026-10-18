@@ -3100,24 +3100,7 @@ static int PickMapRegion(int x, int y) {
 }
 
 
-void Port_SecondScreen_OnTap(int x, int y, int longPress) {
-    TapTarget hit;
-    int found = 0;
-
-    UI_LOCK();
-    for (int i = 0; i < sTapTargetCount; i++) {
-        const TapTarget* t = &sTapTargets[i];
-        if (x >= t->x0 && x < t->x1 && y >= t->y0 && y < t->y1) {
-            hit = *t;
-            found = 1;
-            break;
-        }
-    }
-    UI_UNLOCK();
-    if (!found) {
-        return;
-    }
-
+static void DispatchTapTarget(TapTarget hit, int x, int y, int longPress) {
 #ifdef TMC_3DS
     if (HandleUpdateTap(hit.action, hit.arg)) return;
 #endif
@@ -3356,6 +3339,27 @@ void Port_SecondScreen_OnTap(int x, int y, int longPress) {
             UI_UNLOCK();
             break;
     }
+}
+
+void Port_SecondScreen_OnTap(int x, int y, int longPress) {
+    TapTarget hit;
+    int found = 0;
+
+    UI_LOCK();
+    for (int i = 0; i < sTapTargetCount; i++) {
+        const TapTarget* t = &sTapTargets[i];
+        if (x >= t->x0 && x < t->x1 && y >= t->y0 && y < t->y1) {
+            hit = *t;
+            found = 1;
+            break;
+        }
+    }
+    UI_UNLOCK();
+    if (!found) {
+        return;
+    }
+
+    DispatchTapTarget(hit, x, y, longPress);
 }
 
 /* ------------------------------------------------------------------ */

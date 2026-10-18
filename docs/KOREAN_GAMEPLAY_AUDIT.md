@@ -31,3 +31,26 @@ Existing `verify_text.py` compares the production decoder/glyph/style/width logi
 - K0.4 touch/interaction runtime checks and final package evidence will be recorded after the diagnostic build.
 
 Full dungeon traversal, every optional fusion, all boss battles, the final escape, ending credits and physical Korean 3DS hardware have not all been played through. Static checks and regression tests substantially improve confidence but do not establish that every possible later bug is fixed. Existing save repairs which are explicitly limited to USA/EU remain restricted; this audit does not apply speculative progression-flag repairs to JP saves.
+
+## K0.5 item-panel input timing follow-up
+
+The diagnostic's 30-poll input sampling can repeatedly coincide with the
+three-presentation item-cursor repaint cadence. With both the original one-item
+inventory and a locally cheated 16-slot inventory, taps at that phase were
+rejected as a hidden paint generation. This does not mean physical touch always
+fails; manual taps can fall on other phases and work.
+
+The 3DS adapter now retains target lists for its two upload buffers and copies
+submitted/visible targets at the corresponding display boundaries. For the
+ITEMS panel only, an animation paint may accept a tap when every target
+rectangle, action and item argument exactly equals the visible list. Dispatch
+uses a copied visible target. Task mismatches, pending interactive transitions,
+changed items/rectangles/actions, map transforms and other panels retain the
+strict generation rule. No hash or raw-struct padding comparison is used.
+
+`bottom_touch_test.c` exercises the real adapter's target snapshots across
+paint/submit/visibility and buffer reuse. The frame-state test separately checks
+that matching animation targets cannot bypass a task or interactive transition.
+Runtime verification with the same 16-slot test inventory remains in progress.
+Cheats affect only the isolated emulator instance; the original user save is
+untouched.

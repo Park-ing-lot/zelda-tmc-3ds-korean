@@ -22,14 +22,53 @@ static uint8_t sIdleOwnsSettingsTab;
 static volatile uint8_t sIdleBackVisible;
 static BottomFrameState3DS sFrameState;
 
+/* Two CPU upload buffers, followed by independent submitted/visible copies.
+ * The worker may already be painting the next cursor blink when HID arrives.
+ * Keep the targets belonging to the displayed image, not just the latest paint. */
+typedef struct {
+    const uint32_t* pixels;
+    uint32_t generation;
+    int inGame;
+    int tab;
+    TargetList targets;
+} TouchFrame3DS;
+static TouchFrame3DS sTouchBuffers[2], sSubmittedTouch, sVisibleTouch;
+
+static int TouchTargetsMatch(const TargetList* visible) {
+    if (visible->n != sTapTargetCount) return 0;
+    for (int i = 0; i < visible->n; ++i) {
+        const TapTarget* a = &visible->t[i];
+        const TapTarget* b = &sTapTargets[i];
+        if (a->x0 != b->x0 || a->y0 != b->y0 || a->x1 != b->x1 || a->y1 != b->y1 ||
+            a->action != b->action || a->arg != b->arg) return 0;
+    }
+    return 1;
+}
+
 static uint32_t BeginRefresh(void) {
     return BottomFrameState3DS_BeginPaint(&sFrameState);
 }
 
-static void FinishRefresh(uint32_t request) {
+static void FinishRefresh(uint32_t request, const uint32_t* pixels, int inGame) {
     /* A tap may arrive while the worker is painting.  Acknowledge only the
      * generation this frame actually observed; a newer generation remains
      * pending and schedules another paint instead of being lost. */
+    UI_LOCK();
+    int slot = -1;
+    for (int i = 0; i < 2; ++i) {
+        if (sTouchBuffers[i].pixels == pixels) { slot = i; break; }
+        if (!sTouchBuffers[i].pixels) slot = i;
+    }
+    if (slot >= 0) {
+        TouchFrame3DS* frame = &sTouchBuffers[slot];
+        frame->pixels = pixels;
+        frame->generation = request;
+        frame->inGame = inGame;
+        frame->tab = sUi.tab;
+        frame->targets.n = sTapTargetCount;
+        memcpy(frame->targets.t, sTapTargets, sizeof(TapTarget) * (size_t)sTapTargetCount);
+    }
+    UI_UNLOCK();
     BottomFrameState3DS_FinishPaint(&sFrameState, request);
 }
 
@@ -111,7 +150,7 @@ uint32_t Port_SecondScreen_3DS_PaintInto(uint32_t* pixels, int width, int height
 
     if (snap->introCinema) {
         PaintIntroCinema(pixels, width, height, strideInPixels);
-        FinishRefresh(refreshRequest);
+        FinishRefresh(refreshRequest, pixels, snap->inGame != 0);
         return refreshRequest;
     }
 
@@ -119,7 +158,7 @@ uint32_t Port_SecondScreen_3DS_PaintInto(uint32_t* pixels, int width, int height
         if (settingsOpen) __atomic_store_n(&sIdleSettingsOpen, 0, __ATOMIC_RELEASE);
         if (sIdleOwnsSettingsTab) ResetIdleOnlyState();
         Port_SecondScreen_PaintInto(pixels, width, height, strideInPixels, snap, tick);
-        FinishRefresh(refreshRequest);
+        FinishRefresh(refreshRequest, pixels, snap->inGame != 0);
         return refreshRequest;
     }
 
@@ -129,7 +168,7 @@ uint32_t Port_SecondScreen_3DS_PaintInto(uint32_t* pixels, int width, int height
          * title/file-select boundary even though the picture is replaced. */
         ResetIdleOnlyState();
         BottomIdle3DS_Paint(pixels, width, height, strideInPixels, tick, Platform3DS_IsNew3DS());
-        FinishRefresh(refreshRequest);
+        FinishRefresh(refreshRequest, pixels, snap->inGame != 0);
         return refreshRequest;
     }
 
@@ -161,12 +200,17 @@ uint32_t Port_SecondScreen_3DS_PaintInto(uint32_t* pixels, int width, int height
         DrawIdleBack(&surface, u, ts);
     }
     __atomic_store_n(&sIdleBackVisible, showIdleBack ? 1 : 0, __ATOMIC_RELEASE);
-    FinishRefresh(refreshRequest);
+    FinishRefresh(refreshRequest, pixels, snap->inGame != 0);
     return refreshRequest;
 }
 
 void Port_SecondScreen_3DS_ResetFrameState(void) {
     BottomFrameState3DS_Reset(&sFrameState);
+    UI_LOCK();
+    memset(sTouchBuffers, 0, sizeof(sTouchBuffers));
+    memset(&sSubmittedTouch, 0, sizeof(sSubmittedTouch));
+    memset(&sVisibleTouch, 0, sizeof(sVisibleTouch));
+    UI_UNLOCK();
 }
 
 uint32_t Port_SecondScreen_3DS_RequestRefresh(void) {
@@ -174,11 +218,24 @@ uint32_t Port_SecondScreen_3DS_RequestRefresh(void) {
 }
 
 void Port_SecondScreen_3DS_MarkSubmitted(uint32_t generation, int inGame) {
+    UI_LOCK();
+    sSubmittedTouch.generation = 0;
+    for (int i = 0; i < 2; ++i) {
+        if (sTouchBuffers[i].generation == generation) {
+            sSubmittedTouch = sTouchBuffers[i];
+            break;
+        }
+    }
+    UI_UNLOCK();
     BottomFrameState3DS_MarkSubmitted(&sFrameState, generation, inGame);
 }
 
 void Port_SecondScreen_3DS_PromoteSubmitted(void) {
-    BottomFrameState3DS_PromoteSubmitted(&sFrameState);
+    if (BottomFrameState3DS_PromoteSubmitted(&sFrameState)) {
+        UI_LOCK();
+        sVisibleTouch = sSubmittedTouch;
+        UI_UNLOCK();
+    }
 }
 
 void Port_SecondScreen_3DS_GetFrameStats(BottomFrameState3DSStats* out) {
@@ -198,11 +255,32 @@ void Port_SecondScreen_3DS_OnTap(int x, int y, int longPress) {
     SecondScreenSnapshot currentSnapshot;
     Port_SecondScreenState_Read(&currentSnapshot);
     if (currentSnapshot.introCinema) return;
+    TapTarget visibleHit;
+    int visibleHitFound = 0;
+    UI_LOCK();
+    /* Only the item cursor has a proven animation-only input layout. Exact
+     * rectangle/action/item equality excludes inventory changes. Map transforms
+     * and settings/task transitions retain the strict generation rule. */
+    const int matchingItemTargets = currentSnapshot.inGame && sVisibleTouch.generation != 0 &&
+        sVisibleTouch.inGame && sVisibleTouch.tab == SS_TAB_ITEMS && sUi.tab == SS_TAB_ITEMS &&
+        TouchTargetsMatch(&sVisibleTouch.targets);
+    if (matchingItemTargets) {
+        for (int i = 0; i < sVisibleTouch.targets.n; ++i) {
+            const TapTarget* target = &sVisibleTouch.targets.t[i];
+            if (x >= target->x0 && x < target->x1 && y >= target->y0 && y < target->y1) {
+                visibleHit = *target;
+                visibleHitFound = 1;
+                break;
+            }
+        }
+    }
+    UI_UNLOCK();
     /* Painting publishes the compositor's new hit boxes before its texture
      * can be submitted or shown.  Dispatch only when those hit boxes belong
      * to the confirmed visible generation and task; otherwise fail closed
      * while leaving the per-tick HID polling cadence untouched. */
-    if (!BottomFrameState3DS_CanDispatchTouch(&sFrameState, currentSnapshot.inGame != 0)) {
+    if (!BottomFrameState3DS_CanDispatchTouchWithMatchingTargets(&sFrameState,
+            currentSnapshot.inGame != 0, matchingItemTargets)) {
         /* A same-task hidden paint is already on its way to the display; an
          * extra request would only lengthen this fail-closed interval.  Task
          * transitions (and the pre-first-frame state) still need a paint. */
@@ -212,7 +290,11 @@ void Port_SecondScreen_3DS_OnTap(int x, int y, int longPress) {
         return;
     }
     if (currentSnapshot.inGame) {
-        Port_SecondScreen_OnTap(x, y, longPress);
+        if (matchingItemTargets) {
+            if (visibleHitFound) DispatchTapTarget(visibleHit, x, y, longPress);
+        } else {
+            Port_SecondScreen_OnTap(x, y, longPress);
+        }
         RequestTouchRefresh();
         return;
     }

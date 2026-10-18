@@ -88,6 +88,11 @@ int BottomFrameState3DS_PromoteSubmitted(BottomFrameState3DS* state) {
 }
 
 int BottomFrameState3DS_CanDispatchTouch(BottomFrameState3DS* state, int currentInGame) {
+    return BottomFrameState3DS_CanDispatchTouchWithMatchingTargets(state, currentInGame, 0);
+}
+
+int BottomFrameState3DS_CanDispatchTouchWithMatchingTargets(BottomFrameState3DS* state, int currentInGame,
+                                                           int targetsMatch) {
     if (!state) return 0;
     if (LoadAcquire(&state->touchBlocked) != 0) {
         Count(&state->touchGenerationRejects);
@@ -95,7 +100,7 @@ int BottomFrameState3DS_CanDispatchTouch(BottomFrameState3DS* state, int current
     }
     const uint32_t painted = LoadAcquire(&state->painted);
     const uint32_t visible = LoadAcquire(&state->visible);
-    if (painted == 0 || painted != visible) {
+    if (painted == 0 || visible == 0 || (painted != visible && !targetsMatch)) {
         Count(&state->touchGenerationRejects);
         return 0;
     }

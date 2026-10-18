@@ -113,6 +113,24 @@ static void TestStatsExposeThePipeline(void) {
     assert(stats.touchModeRejects == 1);
 }
 
+static void TestMatchingAnimatedTargets(void) {
+    BottomFrameState3DS state;
+    BottomFrameState3DS_Reset(&state);
+    assert(!BottomFrameState3DS_CanDispatchTouchWithMatchingTargets(&state, 1, 1));
+    const uint32_t first = BottomFrameState3DS_Request(&state);
+    BottomFrameState3DS_FinishPaint(&state, first);
+    BottomFrameState3DS_MarkSubmitted(&state, first, 1);
+    BottomFrameState3DS_PromoteSubmitted(&state);
+    const uint32_t animation = BottomFrameState3DS_Request(&state);
+    BottomFrameState3DS_FinishPaint(&state, animation);
+    assert(!BottomFrameState3DS_CanDispatchTouch(&state, 1));
+    assert(BottomFrameState3DS_CanDispatchTouchWithMatchingTargets(&state, 1, 1));
+    assert(!BottomFrameState3DS_CanDispatchTouchWithMatchingTargets(&state, 0, 1));
+    BottomFrameState3DS_RequestTouchRefresh(&state);
+    /* Equality cannot admit a repeated tap through an interactive transition. */
+    assert(!BottomFrameState3DS_CanDispatchTouchWithMatchingTargets(&state, 1, 1));
+}
+
 static void TestStaticPaintSuppression(void) {
     assert(!BottomFrameState3DS_ShouldSchedulePaint(1, 1, 1, 0, 1, 1));
     assert(BottomFrameState3DS_ShouldSchedulePaint(0, 1, 0, 1, 0, 0));
@@ -129,6 +147,7 @@ int main(void) {
     TestNewerPaintKeepsOlderVisibleFrameClosed();
     TestInteractiveRequestBlocksRepeatedTap();
     TestStatsExposeThePipeline();
+    TestMatchingAnimatedTargets();
     TestStaticPaintSuppression();
     puts("bottom frame state 3DS tests passed");
     return 0;
