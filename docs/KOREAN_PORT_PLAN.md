@@ -56,6 +56,10 @@ cannot port custom ARM text-rendering hooks: native C must implement them.
   ROM's ARM code using Unicorn: 2,185 decoding cases, 8,192 glyph lookups,
   8,192 stylized lookups and 256 width measurements. Only the GBA DMA memory
   copy hardware effect is substituted in the ARM harness.
+- Clean European ROM text behavior matches unchanged upstream C in **62,756
+  cases**, using `tools/korean/verify_eu_regression.py`. Coverage includes
+  decoding, font addresses, stylized mapping and variable-width measurements.
+  This is not a whole-game USA/EU regression claim.
 - Korean translation credit: the supplied ROM itself contains `Francine` at
   offset `0xE6089C`. This corroborates the historical listings at
   https://windowstiger.tistory.com/534 and

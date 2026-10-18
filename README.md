@@ -8,7 +8,9 @@ This is an **experimental fork** of [EstebanPdN/zelda-tmc-3ds](https://github.co
 
 **Development prototype. Early gameplay and Korean dialogue have been observed in Azahar; real 3DS hardware has not yet been tested.**
 
-The initial Korean changes build to CIA and 3DSX. Local comparisons of the production C code against the translation's original ARM routines pass 18,825 cases covering character decoding, glyph addresses, stylized lookup, and variable-width measurement. A user-provided gameplay screenshot confirms Korean dialogue during the opening house event in Azahar 2126.2, whose status bar reports 60 FPS. This is an early runtime check, not a full-game compatibility claim. Hardware testing, later progression, saving/loading, and full Korean text coverage remain open.
+The initial Korean changes build to CIA and 3DSX. Local comparisons of the production C code against the translation's original ARM routines pass 18,825 cases covering character decoding, glyph addresses, stylized lookup, and variable-width measurement. Another 62,756 text comparisons using the clean European ROM match the unmodified upstream C implementation. These are text-system tests, not full-game regression tests.
+
+A user-provided gameplay screenshot confirms Korean dialogue during the opening house event in Azahar 2126.2, whose status bar reports 60 FPS. This is an early runtime check, not a full-game compatibility claim. Hardware testing, later progression, saving/loading, and full Korean text coverage remain open.
 
 ## What this fork changes
 

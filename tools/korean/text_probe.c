@@ -1,10 +1,18 @@
 /* Local differential-test harness for the production text implementation.
  * ROM assets are supplied at runtime and never embedded in this executable. */
-#include "src/text.c"
+#ifndef TMC_TEXT_SOURCE
+#define TMC_TEXT_SOURCE "src/text.c"
+#endif
+#include TMC_TEXT_SOURCE
 #include <stdlib.h>
 
+#ifdef TMC_TEST_EU
+int gPortKoreanRom = 0;
+int gActiveRegion = TMC_REGION_EU;
+#else
 int gPortKoreanRom = 1;
 int gActiveRegion = TMC_REGION_JP;
+#endif
 u8* gRomData;
 u32 gRomSize;
 u8 gEwram[0x40000], gIwram[0x8000], gIoMem[0x400], gVram[0x18000];
@@ -28,8 +36,19 @@ int main(int argc, char** argv) {
     gRomData = malloc(gRomSize);
     if (!gRomData || fread(gRomData, 1, gRomSize, f) != gRomSize) return 2;
     fclose(f);
+#ifdef TMC_TEST_EU
+    if (gRomSize != 0x1000000 || memcmp(gRomData + 0xAC, "BZMP", 4)) return 3;
+    memcpy(gUnk_081092D4, gRomData + 0x108A28, sizeof(gUnk_081092D4));
+    for (unsigned i = 0; i < 9; ++i)
+        gUnk_08109248[i] = (u32*)(gRomData + Port_KoreanRead32(gRomData + 0x10899C + i * 4) - 0x08000000u);
+    for (unsigned i = 0; i < 7; ++i) {
+        u32 address = Port_KoreanRead32(gRomData + 0x108968 + i * 4);
+        gTranslations[i] = address ? (u32*)(gRomData + address - 0x08000000u) : NULL;
+    }
+#else
     if (!Port_KoreanRomHasLayout(gRomData, gRomSize)) return 3;
     memcpy(gUnk_081092D4, gRomData + PORT_KOREAN_STYLE_TABLE, sizeof(gUnk_081092D4));
+#endif
     char mode;
     unsigned a, b, c, style;
     while (scanf(" %c %x %x %x %x", &mode, &a, &b, &c, &style) == 5) {
