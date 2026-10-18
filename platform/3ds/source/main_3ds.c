@@ -14,8 +14,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <mbedtls/sha256.h>
 
-#define APP_DIR "sdmc:/3ds/The Minish Cap 3DS"
+#define APP_DIR "sdmc:/3ds/The Minish Cap 3DS Korean"
 #define ROM_PATH_SIZE 512
 
 extern void AgbMain(void);
@@ -37,11 +38,33 @@ static int HasGbaExtension(const char* name) {
 }
 
 static int RomIsSupported(const char* path) {
-    char gameCode[4];
+    char gameCode[4] = {0};
     FILE* file = fopen(path, "rb");
     if (!file) return 0;
     int ok = fseek(file, 0xAC, SEEK_SET) == 0 && fread(gameCode, 1, sizeof(gameCode), file) == sizeof(gameCode) &&
              (memcmp(gameCode, "BZME", sizeof(gameCode)) == 0 || memcmp(gameCode, "BZMP", sizeof(gameCode)) == 0);
+    if (!ok && memcmp(gameCode, "BZMJ", 4) == 0) {
+        /* Only this analyzed Korean revision is supported. JP headers alone
+         * cannot distinguish arbitrary translations or the retail Japanese ROM. */
+        uint8_t data[4096], digest[32];
+        char hex[65];
+        size_t total = 0, count;
+        mbedtls_sha256_context sha;
+        mbedtls_sha256_init(&sha);
+        int valid = fseek(file, 0, SEEK_SET) == 0 && mbedtls_sha256_starts_ret(&sha, 0) == 0;
+        while (valid && (count = fread(data, 1, sizeof(data), file)) != 0) {
+            total += count;
+            if (total > PORT_KOREAN_ROM_SIZE) { valid = 0; break; }
+            valid = mbedtls_sha256_update_ret(&sha, data, count) == 0;
+        }
+        valid = valid && !ferror(file) && total == PORT_KOREAN_ROM_SIZE &&
+                mbedtls_sha256_finish_ret(&sha, digest) == 0;
+        mbedtls_sha256_free(&sha);
+        if (valid) {
+            for (unsigned i = 0; i < sizeof(digest); ++i) snprintf(hex + i * 2, 3, "%02x", digest[i]);
+            if (strcmp(hex, PORT_KOREAN_ROM_SHA256) == 0) ok = 2;
+        }
+    }
     fclose(file);
     return ok;
 }
@@ -51,6 +74,7 @@ static int FindRom(char* out, size_t outSize) {
     if (!dir) return 0;
 
     int foundGba = 0;
+    int foundRetail = 0;
     struct dirent* entry;
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_name[0] == '.') continue;
@@ -59,14 +83,15 @@ static int FindRom(char* out, size_t outSize) {
         struct stat info;
         if (stat(entry->d_name, &info) != 0 || !S_ISREG(info.st_mode)) continue;
         foundGba = 1;
-        if (!RomIsSupported(entry->d_name)) continue;
-        snprintf(out, outSize, "%s", entry->d_name);
-        closedir(dir);
-        return 1;
+        int supported = RomIsSupported(entry->d_name);
+        if (!supported) continue;
+        if (supported == 2 || !foundRetail) snprintf(out, outSize, "%s", entry->d_name);
+        if (supported == 2) { closedir(dir); return 1; }
+        foundRetail = 1;
     }
 
     closedir(dir);
-    return foundGba ? -1 : 0;
+    return foundRetail ? 1 : (foundGba ? -1 : 0);
 }
 
 int main(int argc, char** argv) {
@@ -97,13 +122,15 @@ int main(int argc, char** argv) {
         if (romResult < 0) {
             snprintf(message, sizeof(message),
                      "None of the .gba files in:\n%s\n"
-                     "is a supported USA (BZME) or Europe (BZMP) ROM.\n\n"
+                     "is a supported Korean, USA or Europe ROM.\n\n"
+                     "Korean SHA-1: 5dfc388f30bec4db3965632cca8fe1a97d9c9f79\n"
                      "Expected SHA-1:\nUSA: b4bd50e4131b027c334547b4524e2dbbd4227130\n"
                      "Europe: cff199b36ff173fb6faf152653d1bccf87c26fb7",
                      APP_DIR);
         } else {
             snprintf(message, sizeof(message),
-                     "Copy your clean USA or Europe ROM to:\n%s\n\nAny .gba filename is accepted.\n\n"
+                     "Copy your Korean, USA or Europe ROM to:\n%s\n\nAny .gba filename is accepted.\n\n"
+                     "Korean SHA-1: 5dfc388f30bec4db3965632cca8fe1a97d9c9f79\n"
                      "Expected SHA-1:\nUSA: b4bd50e4131b027c334547b4524e2dbbd4227130\n"
                      "Europe: cff199b36ff173fb6faf152653d1bccf87c26fb7",
                      APP_DIR);

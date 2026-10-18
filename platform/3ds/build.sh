@@ -44,8 +44,8 @@ if [[ ! -x "${MAKEROM}" || ! -x "${BANNERTOOL}" ]]; then
 fi
 
 "${BANNERTOOL}" makesmdh \
-  -s "The Minish Cap 3DS v${VERSION}" \
-  -l "The Minish Cap 3DS v${VERSION}" \
+  -s "Minish Cap 3DS Korean v${VERSION}" \
+  -l "Minish Cap 3DS Korean v${VERSION}" \
   -p "Esteban PDN / Project Picori / samyost1" \
   -i "${ROOT}/platform/3ds/assets/icon-48.png" \
   -f visible,allow3d,extendedbanner,nosavebackups \

@@ -17,7 +17,7 @@ static void UpdateLog(const char *format, ...) {
   Platform3DS_Debug(line);
 }
 
-#define UPDATE_DIR "sdmc:/3ds/The Minish Cap 3DS/update"
+#define UPDATE_DIR "sdmc:/3ds/The Minish Cap 3DS Korean/update"
 #define UPDATE_PART UPDATE_DIR "/download.part"
 #define CHANNEL_FILE UPDATE_DIR "/channel.txt"
 #define UPDATE_IO_SIZE (128u * 1024u)
@@ -178,10 +178,10 @@ static bool install_cia(void) {
   unsigned char *data = malloc(UPDATE_IO_SIZE);
   if (!data) goto done;
   rc = FSUSER_OpenFileDirectly(&input, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""),
-    fsMakePath(PATH_ASCII, "/3ds/The Minish Cap 3DS/update/download.part"), FS_OPEN_READ, 0);
+    fsMakePath(PATH_ASCII, "/3ds/The Minish Cap 3DS Korean/update/download.part"), FS_OPEN_READ, 0);
   if (R_FAILED(rc)) goto done;
   rc = AM_GetCiaFileInfo(MEDIATYPE_SD, &info, input);
-  if (R_FAILED(rc) || info.titleID != 0x0004000005a22d00ull) goto done;
+  if (R_FAILED(rc) || info.titleID != 0x0004000005a22e00ull) goto done;
   rc = AM_GetCiaRequiredSpace(&required, MEDIATYPE_SD, input);
   if (R_FAILED(rc) || !enough_space(required + 4 * 1024 * 1024ull) || cancelled()) goto done;
   // Overwrite through AM; never delete the installed title first.
@@ -282,6 +282,11 @@ done:
   __atomic_store_n(&busy, false, __ATOMIC_RELEASE);
 }
 static void start(bool downloading) {
+#ifdef TMC_KOREAN_FORK
+  /* Install experiments manually; upstream binaries remove Korean support. */
+  if (initialized) publish(UPDATE_EMPTY, "KOREAN BUILD - UPDATE MANUALLY");
+  return;
+#endif
   if (!initialized || Updater_Busy()) return;
   if (worker) { threadJoin(worker, UINT64_MAX); threadFree(worker); worker = NULL; }
   if (downloading) { UpdateStatus s; Updater_GetStatus(&s); if (s.state != UPDATE_AVAILABLE) return; }

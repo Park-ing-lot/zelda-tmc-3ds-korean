@@ -270,6 +270,15 @@ u32 GetCharacter(Token* token) {
         code = sub_0805EF8C(token);
         token->code = (u8)code;
         iVar8 = 0;
+#ifdef PC_PORT
+        if (gPortKoreanRom && code >= 0xB && code <= 0xF) {
+            u32 lead = code;
+            u32 second = sub_0805EF8C(token);
+            u32 third = (lead == 0xF && second > 0x3F) ? sub_0805EF8C(token) : 0;
+            code = Port_KoreanDecodeGlyph(lead, second, third);
+            break;
+        }
+#endif
         switch (code) {
             case 0:
                 iVar8 = sub_0805EFB4(token);
@@ -435,6 +444,20 @@ u32* sub_0805F25C(u32 param_1) {
     u32 lang = gSaveHeader->language;
 
 #ifdef PC_PORT
+    if (gPortKoreanRom) {
+        u32 offset = Port_KoreanGlyphOffset(gRomData, gRomSize, param_1, lang);
+        /* Malformed/out-of-range codes use a blank glyph, with two halves
+         * available for the wide renderer. */
+        static u32 blank[32];
+        if (offset == UINT32_MAX) {
+            memset(blank, 0xFF, sizeof(blank));
+            return blank;
+        }
+        return (u32*)(gRomData + offset);
+    }
+#endif
+
+#ifdef PC_PORT
     if (lang >= RegionLanguageSlotCount() || gTranslations[lang] == NULL) {
         lang = RegionDefaultLanguage();
         if (lang >= RegionLanguageSlotCount() || gTranslations[lang] == NULL) {
@@ -552,7 +575,11 @@ u32 GetFontStrWith(Token* param_1, u32 param_2) {
                 default:
                     if (uVar5 == 0) {
                         puVar2 = (u32*)sub_0805F25C(character);
-                        if (4 < character >> 8) {
+                        if (
+#ifdef PC_PORT
+                            gPortKoreanRom ? Port_KoreanGlyphIsWide(character) :
+#endif
+                            (4 < character >> 8)) {
                             uVar3 = sub_0805F7A0(puVar2[0x10]);
                             uVar4 += (uVar3 >> 8);
                         }
@@ -839,7 +866,11 @@ u32 sub_0805F7DC(u32 r0, WStruct* r1) {
 
     offset = sub_0805F25C(r0);
     temp = r1->unk6;
-    if ((r0 >> 8) > 4) {
+    if (
+#ifdef PC_PORT
+        gPortKoreanRom ? Port_KoreanGlyphIsWide(r0) :
+#endif
+        ((r0 >> 8) > 4)) {
         sub_0805F820(r1, offset);
         offset += 0x10;
     }

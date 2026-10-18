@@ -9,6 +9,7 @@
 #include "ui.h"
 #ifdef PC_PORT
 #include <stdio.h>
+#include "port_korean_rom.h"
 #include "../port/port_tts.h"
 #endif
 
@@ -690,7 +691,13 @@ u16 RunTextCommand(TextRender* this) {
         gMessage.unk = 0x80;
     }
     this->curToken.extended = 0;
-    if (chr >> 8 == 7) {
+    if (chr >> 8 ==
+#ifdef PC_PORT
+        (gPortKoreanRom ? 3 : 7)
+#else
+        7
+#endif
+    ) {
         this->_90 = this->_8f | 0x80;
         PaletteChange(this, 0);
     } else {

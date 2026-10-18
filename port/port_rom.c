@@ -71,6 +71,7 @@ const char* Port_GetLoadedRomPath(void) {
     return sLoadedRomPath[0] ? sLoadedRomPath : NULL;
 }
 u32 gRomSize = 0;
+int gPortKoreanRom = 0;
 static SpritePtr sSpritePtrsStable[512];
 
 static u8* AllocateRomBuffer(u32 size, int clear) {
@@ -699,6 +700,7 @@ u16 Port_GetTileTypeProperty(u32 tileType) {
 }
 
 RomRegion Port_DetectRomRegion(const u8* romData, u32 romSize) {
+    gPortKoreanRom = Port_KoreanRomHasLayout(romData, romSize);
     if (!romData || romSize < 0xB0)
         return ROM_REGION_UNKNOWN;
 
@@ -1563,7 +1565,7 @@ void Port_LoadRom(const char* path) {
     Port_DetectRomRegion(gRomData, gRomSize);
     const RomOffsets* R = gRomOffsets;
 
-    if (gRomSize < R->expectedRomSize) {
+    if (gRomSize < R->expectedRomSize && !gPortKoreanRom) {
         char msg[256];
         snprintf(msg, sizeof(msg), "ROM file is truncated or invalid (size %u < expected %u).", gRomSize,
                  R->expectedRomSize);
@@ -1751,7 +1753,7 @@ void Port_LoadRom(const char* path) {
     /* Font/text data tables — from active ROM */
     memcpy(gUnk_08109244, &gRomData[R->text09244], 4);
     memcpy(gUnk_0810926C, &gRomData[R->text0926C], 64);
-    memcpy(gUnk_081092D4, &gRomData[R->text092D4], 346);
+    memcpy(gUnk_081092D4, &gRomData[gPortKoreanRom ? PORT_KOREAN_STYLE_TABLE : R->text092D4], 346);
     memcpy(gUnk_0810942E, &gRomData[R->text0942E], 160);
     memcpy(gUnk_081094CE, &gRomData[R->text094CE], 1378);
 

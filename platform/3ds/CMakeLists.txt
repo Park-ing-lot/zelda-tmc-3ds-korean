@@ -116,7 +116,7 @@ target_include_directories(tmc-3ds PRIVATE
 )
 
 target_compile_definitions(tmc-3ds PRIVATE
-    PC_PORT NON_MATCHING USE_HDMA TMC_3DS MULTI_REGION USA ENGLISH REVISION=0
+    PC_PORT NON_MATCHING USE_HDMA TMC_3DS TMC_KOREAN_FORK MULTI_REGION USA ENGLISH REVISION=0
     MODE1_GBA_WIDTH=400 MODE1_GBA_HEIGHT=240 PPU_GPU3DS_PROFILE
     TMC_PORT_VERSION="${TMC_3DS_VERSION}" TMC_PC_VERSION="${TMC_3DS_VERSION}"
 )
@@ -191,8 +191,8 @@ configure_file(
 set(TMC_SMDH "${CMAKE_CURRENT_BINARY_DIR}/tmc-3ds.smdh")
 ctr_generate_smdh(
     OUTPUT "${TMC_SMDH}"
-    NAME "The Minish Cap 3DS v${TMC_3DS_VERSION}"
-    DESCRIPTION "Native Nintendo 3DS port"
+    NAME "Minish Cap 3DS Korean v${TMC_3DS_VERSION}"
+    DESCRIPTION "Experimental Korean ROM support"
     AUTHOR "Esteban PDN / Project Picori / samyost1"
     ICON "${CMAKE_CURRENT_LIST_DIR}/assets/icon-48.png"
 )

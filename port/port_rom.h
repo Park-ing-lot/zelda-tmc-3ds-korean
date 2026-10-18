@@ -1,6 +1,7 @@
 #pragma once
 #include <string.h>
 #include "port_config.h"
+#include "port_korean_rom.h"
 #include "port_types.h"
 #include "structures.h"
 #include "map.h"
