@@ -28,7 +28,7 @@ Existing `verify_text.py` compares the production decoder/glyph/style/width logi
 - The user's original early-game Korean dialogue screenshot demonstrated actual game execution.
 - K0.3 was launched in Azahar 2126.2 with Korea selected and a separate SD directory containing a copy of the user's saved `HT` slot. The save loaded into Link's house. Actual framebuffer captures show the three bottom navigation labels correctly.
 - Original user save/config files are preserved. Diagnostic input/capture is opt-in and excluded from normal packages.
-- K0.4 touch/interaction runtime checks and final package evidence will be recorded after the diagnostic build.
+- K0.5 diagnostic runtime tests in Azahar loaded the same copied `HT` slot. A user-authorized temporary inventory filled all 16 item slots. Each on-screen cell was tapped and the actual native A-slot equipment byte was read through the official emulator RPC API: all 16 matched the source item metadata. Selecting the B ring and then the sword produced A=shield (13), B=sword (1). QUEST/MAP/ITEMS/SETTINGS navigation and SCREEN/BACK transitions were observed. The Gust Jar was equipped and held active; its suction animation and particles rendered in the house. These are interaction and limited item-use checks, not dungeon playthrough coverage.
 
 Full dungeon traversal, every optional fusion, all boss battles, the final escape, ending credits and physical Korean 3DS hardware have not all been played through. Static checks and regression tests substantially improve confidence but do not establish that every possible later bug is fixed. Existing save repairs which are explicitly limited to USA/EU remain restricted; this audit does not apply speculative progression-flag repairs to JP saves.
 
@@ -51,6 +51,22 @@ strict generation rule. No hash or raw-struct padding comparison is used.
 `bottom_touch_test.c` exercises the real adapter's target snapshots across
 paint/submit/visibility and buffer reuse. The frame-state test separately checks
 that matching animation targets cannot bypass a task or interactive transition.
-Runtime verification with the same 16-slot test inventory remains in progress.
+Runtime verification with the same 16-slot test inventory passed all 16 item-cell
+assignments with zero generation rejects during that sequence, plus the B-slot
+sword assignment and subsequent settings/submenu/back/tab transitions.
+The periodic diagnostic sampler is phase-sensitive; one initial MAP-panel
+navigation tap was rejected under the preserved strict rule before entry to
+ITEMS. This change specifically addresses animation-only ITEMS rejection and
+does not claim that transition guards never reject input.
 Cheats affect only the isolated emulator instance; the original user save is
 untouched.
+
+## Packaged build evidence
+
+- Source for both K0.5 package variants: `bfb6d46f983144d0ed4d3e95597960c5c13c35e3`.
+- [Diagnostic build and all 16 host checks](https://github.com/Park-ing-lot/zelda-tmc-3ds-korean/actions/runs/39107217301): success.
+- [Normal CIA/3DSX build](https://github.com/Park-ing-lot/zelda-tmc-3ds-korean/actions/runs/39107384977): success.
+- Normal 3DSX SHA-256: `bd458fa0a8fe4032a0eee00076523b203ba7753ded6080b619f54194ecc1952c`.
+- Normal CIA SHA-256: `3754aa6216c015ce57cd95e3c66c0cd5ad0f52e55630058c70e4f6fed739cb99`.
+- Normal 3DSX excludes probe input/capture filenames. SMDH region mask `0xffffffff` includes Korea; the CIA NCCH program ID is `0004000005A22E00`, product code `CTR-P-TMCK`. These metadata checks do not replace hardware testing.
+- The original user EEPROM image retained its initial SHA-256 `0759a9597fc8d5819b52073ed2116cf1c4a9f0a327530bf6b802e5ccdfeb35a3` after the tests. Temporary cheats were confined to an isolated emulator instance.

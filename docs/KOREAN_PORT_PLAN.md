@@ -109,3 +109,19 @@ cannot port custom ARM text-rendering hooks: native C must implement them.
   cases. AddressSanitizer/UndefinedBehaviorSanitizer checks also pass.
 - The user's 8 KiB save and settings were backed up locally under the ignored
   `.tmp/save-backups/` folder before runtime testing. Test with copies only.
+
+## Gameplay and interaction follow-up — K0.5
+
+The expanded audit and precise remaining limits are in
+[KOREAN_GAMEPLAY_AUDIT.md](KOREAN_GAMEPLAY_AUDIT.md). Verified fixes include
+22 missing JP profile addresses, 26 additional room lists, regional packed
+pointers and three missing Goron callbacks. All 235 direct raw room-init lists
+were reviewed; 556 non-unused script intervals resolve 468 native callbacks.
+Both diagnostic and normal K0.5 packages build successfully with 16 ROM-free
+host test programs passing under address/undefined-behavior sanitizers.
+
+Runtime tests loaded the user's copied save, exercised all 16 item cells and
+A/B assignment, settings/submenu/back/tab interaction, and active Gust Jar use.
+An animation/input timing issue was reproduced with one-item and 16-slot
+inventories and corrected for matching visible ITEMS targets. Full ending and
+physical Korean 3DS acceptance remain outstanding.

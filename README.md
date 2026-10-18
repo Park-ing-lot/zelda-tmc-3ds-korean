@@ -12,9 +12,9 @@ The initial Korean changes build to CIA and 3DSX. Local comparisons of the produ
 
 A user-provided gameplay screenshot confirms Korean dialogue during the opening house event in Azahar 2126.2, whose status bar reports 60 FPS. This is an early runtime check, not a full-game compatibility claim. A separate K0.3 diagnostic run also loaded a copy of the user’s saved slot and displayed the bottom tab labels correctly. Hardware testing, full later progression and full Korean text coverage remain open.
 
-The K0.4 gameplay audit fixes missing Japanese-profile tables, 26 regional room
+The K0.4/K0.5 gameplay audit fixes missing Japanese-profile tables, 26 regional room
 lists (including dungeon boss rewards), native script-pointer provenance and
-three missing Goron script callbacks. See [the audit and its verification limits](docs/KOREAN_GAMEPLAY_AUDIT.md).
+three missing Goron script callbacks. K0.5 also improves ITEMS touch timing across cursor repaints. Sixteen host test programs pass with memory sanitizers; local runtime checks assign all 16 item slots through the actual UI and confirm A/B equipment changes, settings navigation and Gust Jar use. See [the audit and its verification limits](docs/KOREAN_GAMEPLAY_AUDIT.md).
 This does not claim that a complete ending playthrough has been verified.
 
 ## What this fork changes
