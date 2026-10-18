@@ -22,8 +22,9 @@ const u8 gBombBagSizes[] = {10,30,50,99}, gQuiverSizes[] = {30,50,70,99};
 void Port_SecondScreen_3DS_LockSnapshot(void) { }
 void Port_SecondScreen_3DS_UnlockSnapshot(void) { }
 static unsigned mapOwned;
+static unsigned equipCalls;
 u32 GetInventoryValue(u32 item) { return item == ITEM_MAP ? mapOwned : item == ITEM_BOOMERANG; }
-void ForceEquipItem(u32 item, u32 slot) { gSave.stats.equipped[slot] = item; }
+void ForceEquipItem(u32 item, u32 slot) { ++equipCalls; gSave.stats.equipped[slot] = item; }
 bool Port_Config_GetHideTopHud(void) { return false; }
 u32 sub_080A6F40(void) { return 0xffff; }
 int main(void) {
@@ -85,5 +86,23 @@ int main(void) {
     CHECK(!next.introCinema && !next.hasWorldMap);
     gMain.task=TASK_TITLE;
     Port_SecondScreenState_Publish(); Port_SecondScreenState_Read(&next); CHECK(!next.inGame);
+    /* Touch requests cross the UI/game boundary exactly once, and may not
+     * equip unowned items or survive a title/save transition. */
+    gMain.task=TASK_GAME;
+    Port_SecondScreenState_RequestEquip(ITEM_BOOMERANG, 0);
+    CHECK(equipCalls==0);
+    Port_SecondScreenState_Publish();
+    CHECK(equipCalls==1 && gSave.stats.equipped[SLOT_A]==ITEM_BOOMERANG);
+    Port_SecondScreenState_Publish(); CHECK(equipCalls==1);
+    Port_SecondScreenState_RequestEquip(ITEM_BOOMERANG, 1);
+    Port_SecondScreenState_Publish();
+    CHECK(equipCalls==2 && gSave.stats.equipped[SLOT_B]==ITEM_BOOMERANG);
+    Port_SecondScreenState_RequestEquip(ITEM_GUST_JAR, 0);
+    Port_SecondScreenState_Publish(); CHECK(equipCalls==2);
+    gMain.task=TASK_TITLE;
+    Port_SecondScreenState_RequestEquip(ITEM_BOOMERANG, 0);
+    Port_SecondScreenState_Publish(); CHECK(equipCalls==2);
+    gMain.task=TASK_GAME;
+    Port_SecondScreenState_Publish(); CHECK(equipCalls==2);
     puts("port_second_screen_state_test: ALL PASS"); return 0;
 }
