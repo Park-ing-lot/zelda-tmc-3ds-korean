@@ -120,6 +120,17 @@ def main():
         third = rng.randrange(1, 256) if lead == 0xF and second > 0x3F else 0
         add('W', lead, second, third)
 
+    # Intentional compatibility correction: the translation's result-only
+    # choices use 05 00, whereas its retained ARM decoder expects 05 FF.
+    # Do not compare these to that broken ARM path: assert the intended
+    # target and that the following Hangul/ASCII character is not consumed.
+    for second in (0, 0xFF):
+        cases.append(f'C {second:x} c 50 0\n')
+        expected.append((12, 2, 0, 0x550, 4))
+    cases.append('C 46 5f 41 0\n')
+    expected.append((12, 3, 0x465F, 0x141, 4))
+    categories['choice_compatibility'] = 3
+
     with tempfile.TemporaryDirectory(prefix='tmc-korean-') as temp:
         probe = pathlib.Path(temp) / 'text-probe'
         strip = '-Wl,-dead_strip' if sys.platform == 'darwin' else '-Wl,--gc-sections'
@@ -140,7 +151,7 @@ def main():
         for case, a, e in failures[:12]:
             print('FAIL {}: C={} ARM={}'.format(case, a, e))
         raise AssertionError('{} mismatches'.format(len(failures)))
-    print('PASS: {} C/ARM comparisons {}'.format(len(cases), categories))
+    print('PASS: {} text cases (ARM differential checks plus explicit choice compatibility assertions) {}'.format(len(cases), categories))
 
 
 if __name__ == '__main__':

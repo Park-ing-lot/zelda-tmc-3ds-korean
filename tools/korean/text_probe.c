@@ -71,6 +71,16 @@ int main(int argc, char** argv) {
             Token token = {0};
             sub_0805EF40(&token, bytes);
             printf("%x\n", GetFontStrWith(&token, 0));
+        } else if (mode == 'C') {
+            u8 bytes[] = {5, (u8)a, (u8)b, (u8)c, 0};
+            Token token = {0};
+            sub_0805EF40(&token, bytes);
+            u32 code = GetCharacter(&token);
+            unsigned consumed = token.buf[0] - bytes;
+            u32 target = token._6;
+            u32 following = GetCharacter(&token);
+            printf("%x %x %x %x %x\n", code, consumed, target, following,
+                   (unsigned)(token.buf[0] - bytes));
         } else return 4;
     }
     free(gRomData);

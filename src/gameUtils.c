@@ -404,8 +404,13 @@ void RestoreGameTask(bool32 loadGfx) {
      * doesn't fire on the port. Raise the per-layer updated flag and run the
      * buffer→VRAM copy immediately so the room reappears instead of black. */
     gScreen.bg0.updated = 1;
-    gScreen.bg1.updated = 1;
-    gScreen.bg2.updated = 1;
+    /* A weather/overlay manager can own BG1 or BG2 instead of a room map.
+     * Its onEnter callback above has already restored the VRAM tilemap.
+     * Uploading the cleared ordinary map buffer here destroys that overlay
+     * (notably Crenel ash at screenbase 29). Only force map-owned layers. */
+    gScreen.bg1.updated = gMapBottom.bgSettings == &gScreen.bg1 || gMapTop.bgSettings == &gScreen.bg1;
+    gScreen.bg2.updated = gMapBottom.bgSettings == (BgSettings*)&gScreen.bg2 ||
+                          gMapTop.bgSettings == (BgSettings*)&gScreen.bg2;
     sub_08016CA8(&gScreen.bg0);
     sub_08016CA8(&gScreen.bg1);
     sub_08016CA8((BgSettings*)&gScreen.bg2);

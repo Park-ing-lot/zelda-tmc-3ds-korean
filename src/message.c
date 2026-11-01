@@ -58,6 +58,9 @@ extern void sub_0805EEB4(Token* tok, u32 textIdx);
 extern void sub_0805F8E4(u32 idx, WStruct* data);
 u32 sub_0805F7DC(u32, WStruct*);
 u32 GetFontStrWith(Token*, u32);
+#ifdef PC_PORT
+extern u32 Port_TextGlyphWidth(u32, const WStruct*);
+#endif
 
 #ifdef PC_PORT
 extern u8* gUnk_08107BE0[];
@@ -610,6 +613,13 @@ u16 RunTextCommand(TextRender* this) {
                 break;
             case 4:
                 temp = GetFontStrWith(&this->curToken, 0);
+#ifdef PC_PORT
+                if (gPortKoreanRom && temp > this->_50.unk4 - this->_50.unk6) {
+                    /* A translated line can be longer than its original.
+                     * Do not turn negative centering into a huge u16 cursor. */
+                    break;
+                }
+#endif
                 this->_50.unk6 = this->_50.unk6 + (this->_50.unk4 - this->_50.unk6 - temp) / 2;
                 break;
             case 5:
@@ -690,6 +700,23 @@ u16 RunTextCommand(TextRender* this) {
     if (gMessage.unk == 0) {
         gMessage.unk = 0x80;
     }
+#ifdef PC_PORT
+    if (gPortKoreanRom && (s32)Port_TextGlyphWidth(chr, &this->_50) >
+                             (s32)this->_50.unk4 - this->_50.unk6) {
+        /* Keep the decoded character pending: GetCharacter may have consumed
+         * several bytes or entered a substituted name/number stream. Rewinding
+         * a byte pointer would lose that state. The regular page-advance path
+         * resumes this exact glyph after line 2 fills. */
+        this->curToken.extended = chr;
+        this->newlineDelay = 2;
+        if (this->_98.bytes.lineNo == 0) {
+            MsgChangeLine(1);
+        } else {
+            this->renderStatus = RENDER_WAIT;
+        }
+        return 0;
+    }
+#endif
     this->curToken.extended = 0;
     if (chr >> 8 ==
 #ifdef PC_PORT

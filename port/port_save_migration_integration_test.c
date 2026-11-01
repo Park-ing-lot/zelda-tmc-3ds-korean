@@ -23,6 +23,7 @@
 #include "region.h"
 #include "save.h"
 #include "sound.h"
+#include "menu.h"
 
 #define EEPROM_SIZE 0x2000u
 #define EEPROM_BLOCK_SIZE 8u
@@ -49,9 +50,11 @@ SaveFile gSave;
 SoundPlayingInfo gSoundPlayingInfo;
 u8 _gMenuSharedStorage[0x40];
 u8 gEwram[0x40000];
-void InitDMA(void) { abort(); }
-void InitVBlankDMA(void) { abort(); }
-void sub_08050384(void) { abort(); }
+static bool sExerciseSaveScreen;
+static unsigned sDmaStops, sDmaStarts, sUiRestores;
+void InitDMA(void) { if (!sExerciseSaveScreen) abort(); ++sDmaStops; }
+void InitVBlankDMA(void) { if (!sExerciseSaveScreen) abort(); ++sDmaStarts; }
+void sub_08050384(void) { if (!sExerciseSaveScreen) abort(); ++sUiRestores; }
 
 static int sFailures;
 
@@ -267,6 +270,46 @@ static void TestCanonicalCompatibility(void) {
           "canonical prior raw profile is never rewritten");
     CHECK(!FileExists("tmc_migration_canonical.sav.pre-migration.bak"),
           "canonical prior save creates no migration backup");
+}
+
+static SaveResult RunSaveScreen(void) {
+    memset(&gMenu, 0, sizeof(gMenu));
+    memset(&gSoundPlayingInfo, 0, sizeof(gSoundPlayingInfo));
+    gSoundPlayingInfo.volumeMasterUnk = gSoundPlayingInfo.volumeMasterTarget = 256;
+    gSoundPlayingInfo.volumeMaster = 256;
+    sExerciseSaveScreen = true;
+    SaveResult result = SAVE_BUSY;
+    for (unsigned frame = 0; frame < 200 && result == SAVE_BUSY; ++frame) {
+        result = HandleSave(0);
+        /* Audio tick follows the requested master fade each frame. */
+        gSoundPlayingInfo.volumeMaster = gSoundPlayingInfo.volumeMasterTarget;
+    }
+    sExerciseSaveScreen = false;
+    CHECK(result != SAVE_BUSY, "animated save reaches a terminal result");
+    return result;
+}
+
+static void TestAnimatedSaveResults(void) {
+    for (int region = TMC_REGION_USA; region <= TMC_REGION_JP; ++region) {
+        char path[80];
+        snprintf(path, sizeof(path), "tmc_save_screen_%d.sav", region);
+        gActiveRegion = region;
+        ActivateProfile(path);
+        InitSaveData();
+        BuildCanonicalVanilla(&gSave);
+        gSaveHeader->saveFileId = 0;
+        CHECK(RunSaveScreen() == SAVE_OK, "real save screen reports durable success in every region");
+        SaveFile loaded;
+        CHECK(ReadSaveFile(0, &loaded) == 1 && memcmp(&loaded, &gSave, sizeof(loaded)) == 0,
+              "save screen persists the actual active slot");
+        gSave.stats.rupees++;
+        Port_Save_TestFailNextAtomicWrite();
+        CHECK(RunSaveScreen() == SAVE_ERROR, "real storage failure still reports SAVE_ERROR");
+        CHECK(RunSaveScreen() == SAVE_OK, "save can be retried after a storage failure");
+    }
+    CHECK(sDmaStops == 9 && sDmaStarts == 9 && sUiRestores == 9,
+          "every save restores DMA and the UI exactly once");
+    gActiveRegion = TMC_REGION_USA;
 }
 
 /* Ordinary slot reset/copy operations in the previous releases wrote this
@@ -588,6 +631,7 @@ int main(void) {
     if (tempDirectory == NULL || chdir(tempDirectory) != 0) return 1;
 
     TestCanonicalCompatibility();
+    TestAnimatedSaveResults();
     TestInactiveLegacyMetadata();
     gActiveRegion = TMC_REGION_EU;
     TestInactiveLegacyMetadata();

@@ -9,6 +9,9 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 TESTS = {
+    'dialogue': ['tools/korean/dialogue_test.c'],
+    'text_choices': ['tools/korean/text_choice_test.c'],
+    'overlay_restore': ['tools/korean/overlay_restore_test.c', 'src/gameUtils.c', 'src/manager/weatherChangeManager.c'],
     'profile': ['tools/korean/profile_test.c'],
     'bottom_touch': ['tools/korean/bottom_touch_test.c', 'platform/3ds/source/bottom_frame_state_3ds.c'],
     'bottom_font': ['tools/korean/bottom_font_test.c'],

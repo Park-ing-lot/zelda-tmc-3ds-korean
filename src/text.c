@@ -350,7 +350,16 @@ u32 GetCharacter(Token* token) {
                 break;
             case 5:
                 uVar6 = sub_0805EF8C(token);
-                if (uVar6 == 0xff) {
+                if (uVar6 == 0xff
+#ifdef PC_PORT
+                    || (gPortKoreanRom && uVar6 == 0)
+#endif
+                ) {
+                    /* This translation encodes a result-only choice as
+                     * 05 00 (the original uses 05 FF). Consuming another
+                     * byte steals the first Hangul bank byte and redirects
+                     * NPC choices to system text 000B/000C/000F, including
+                     * the save-error message. No EEPROM save was requested. */
                     uVar6 = 0;
                 } else {
                     uVar6 <<= 8;
@@ -855,6 +864,20 @@ static u32 sub_0805F7A0(u32 param_1) {
     i -= j;
     return (i << 8) | j;
 }
+
+#ifdef PC_PORT
+/* Measure the same glyph cells that sub_0805F7DC will draw, before clipping
+ * to the remaining canvas width. Korean dialogue needs this to wrap without
+ * consuming the right half of a Hangul glyph at the edge of the box. */
+u32 Port_TextGlyphWidth(u32 character, const WStruct* canvas) {
+    const u32* glyph = sub_0805F25C(character);
+    const bool32 wide = gPortKoreanRom ? Port_KoreanGlyphIsWide(character) : (character >> 8) > 4;
+    if (canvas->unk1 != 0) return wide ? 16 : 8;
+    u32 width = sub_0805F7A0(glyph[0]) >> 8;
+    if (wide) width += sub_0805F7A0(glyph[0x10]) >> 8;
+    return width;
+}
+#endif
 
 u32 sub_0805F7DC(u32 r0, WStruct* r1) {
     u32 temp;
