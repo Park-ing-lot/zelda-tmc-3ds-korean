@@ -1,5 +1,9 @@
 # Korean ROM support plan
 
+Current update: [K0.6 fixes and upstream adaptation](KOREAN_K06_FIXES.md).
+The player now reports gameplay on a physical Korean 3DS; this does not yet
+confirm K0.6 or a full-game playthrough.
+
 This fork targets the user's Korean translation of The Minish Cap on a
 homebrew-enabled Korean Nintendo 3DS. It preserves the upstream native engine,
 dual-screen interface, and USA/EU support. Original ROMs stay local and are never

@@ -6,11 +6,13 @@ This is an **experimental fork** of [EstebanPdN/zelda-tmc-3ds](https://github.co
 
 ## Current status
 
-**Development prototype. Early gameplay and Korean dialogue have been observed in Azahar; real 3DS hardware has not yet been tested.**
+**Development prototype. The player reports working gameplay on a physical Korean 3DS, with dialogue and graphics problems addressed in K0.6. K0.6 hardware confirmation and a complete ending playthrough are still pending.**
+
+K0.6 corrects Korean NPC choices that incorrectly opened the system's save-error text, preserves long dialogue across lines/pages, and prevents ordinary map restoration from overwriting weather overlays. It also adapts upstream's removal of the experimental camera. See the [K0.6 investigation and validation](docs/KOREAN_K06_FIXES.md) for causes, upstream provenance, tests and remaining limits.
 
 The initial Korean changes build to CIA and 3DSX. Local comparisons of the production C code against the translation's original ARM routines pass 18,825 cases covering character decoding, glyph addresses, stylized lookup, and variable-width measurement. Another 62,756 text comparisons using the clean European ROM match the unmodified upstream C implementation. These are text-system tests, not full-game regression tests.
 
-A user-provided gameplay screenshot confirms Korean dialogue during the opening house event in Azahar 2126.2, whose status bar reports 60 FPS. This is an early runtime check, not a full-game compatibility claim. A separate K0.3 diagnostic run also loaded a copy of the user’s saved slot and displayed the bottom tab labels correctly. Hardware testing, full later progression and full Korean text coverage remain open.
+A user-provided gameplay screenshot confirms Korean dialogue during the opening house event in Azahar 2126.2, whose status bar reports 60 FPS. This is an early runtime check, not a full-game compatibility claim. A separate K0.3 diagnostic run also loaded a copy of the user’s saved slot and displayed the bottom tab labels correctly. Full later progression and full Korean text coverage remain open.
 
 The K0.4/K0.5 gameplay audit fixes missing Japanese-profile tables, 26 regional room
 lists (including dungeon boss rewards), native script-pointer provenance and

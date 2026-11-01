@@ -17,11 +17,11 @@
  *   The two reference GBA ports that actually ship widescreen both fix
  *   this the same way — by keying every cull/camera bound off one
  *   display-width constant instead of a literal 240:
- *     - SAT-R/sa2:      include/gba/defines.h (DISPLAY_WIDTH) +
- *                       include/game/shared/stage/camera.h (IS_OUT_OF_RANGE,
+ *     - SAT-R/sa2:      engine/include/gba/defines.h (DISPLAY_WIDTH) +
+ *                       engine/include/game/shared/stage/camera.h (IS_OUT_OF_RANGE,
  *                       IS_OUT_OF_DISPLAY_RANGE, CAM_BOUND_X).
- *     - pret/pokeemerald: src/event_object_movement.c cull at
- *                       `x >= DISPLAY_WIDTH + 16`; src/sprite.c parks
+ *     - pret/pokeemerald: engine/src/event_object_movement.c cull at
+ *                       `x >= DISPLAY_WIDTH + 16`; engine/src/sprite.c parks
  *                       off-screen sprites at `DISPLAY_WIDTH + 64`.
  *
  * PORT_VIEW_WIDTH is that constant for this port. It tracks
@@ -39,16 +39,20 @@
 #define MODE1_GBA_WIDTH 240
 #endif
 
-#include "port_3ds_full_view_policy.h"
-
-/* Compile-time render capacity. Runtime gameplay remains 160 lines except
- * for the latched New 3DS outdoor 1:1 view. */
+/* Compile-time render capacity; gameplay uses the native 160-line height. */
 #define PORT_VIEW_WIDTH (MODE1_GBA_WIDTH)
 #ifdef MODE1_GBA_HEIGHT
 #define PORT_VIEW_HEIGHT (MODE1_GBA_HEIGHT)
 #else
 #define PORT_VIEW_HEIGHT 160
 #endif
+
+/* Map the camera travel to an authored parallax span. A room that fits the
+ * viewport has no scroll range and therefore contributes zero offset. */
+static inline int Port_Widescreen_ParallaxOffset(int scrollDelta, int roomExtent, int viewExtent, int outputSpan) {
+    const int travel = roomExtent - viewExtent;
+    return travel > 0 ? (scrollDelta * outputSpan) / travel : 0;
+}
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,19 +73,14 @@ int Port_Widescreen_FallbackNative(void);
 int Port_Widescreen_IsActive(void);
 int Port_Widescreen_EffectiveViewWidth(void);
 int Port_Widescreen_EffectiveViewHeight(void);
-/* World simulation keeps the last safe experimental geometry while a
- * dialogue/native mask temporarily uses the E2 presentation. */
+/* Simulation geometry uses the normal room-capped widescreen view. */
 int Port_Widescreen_GameplayViewWidth(void);
 int Port_Widescreen_GameplayViewHeight(void);
-/* Geometry the next BG/OAM producer tick must prepare. During a one-frame
- * activation stage it is experimental even though presentation remains E2. */
+/* Geometry used by the next BG/OAM producer tick. */
 int Port_Widescreen_ProducerViewWidth(void);
 int Port_Widescreen_ProducerViewHeight(void);
-Port3DSFullViewMode Port_Widescreen_3DSViewMode(void);
-Port3DSFullViewFallbackReason Port_Widescreen_3DSFallbackReason(void);
 int Port_Widescreen_HudRightAnchor(void);
-/* UI simulation can prepare button positions one frame before an experimental
- * geometry is published, keeping BG/OAM coherent on its first visible frame. */
+/* HUD placement follows the producer geometry. */
 int Port_Widescreen_HudTargetViewWidth(void);
 int Port_Widescreen_HudTargetViewHeight(void);
 /* True while the map BGs are what the PPU renders (>=1 shadow registered);
@@ -121,11 +120,6 @@ int Port_Widescreen_TargetViewWidth(void);
  * effective view width of 240. */
 int Port_Widescreen_CameraRestX(int target_x);
 int Port_Widescreen_CameraRestY(int target_y);
-/* Called before Scroll1 so a native-canvas overlay can atomically re-clamp
- * an experimental camera before BG/OAM for that fallback frame are built. */
-/* Re-clamp the camera when the desired geometry has fallen back since the
- * first scroll pass. Returns nonzero only when it changed camera geometry. */
-int Port_Widescreen_PrepareGameplayCamera(void);
 /* Snapshot outgoing map tiles before the room loader replaces them. */
 void Port_Widescreen_BeginScroll(unsigned room, unsigned direction);
 int Port_Widescreen_AdvanceScroll(void);

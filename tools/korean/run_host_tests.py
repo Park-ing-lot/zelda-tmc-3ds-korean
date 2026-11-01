@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[2]
 TESTS = {
     'dialogue': ['tools/korean/dialogue_test.c'],
     'text_choices': ['tools/korean/text_choice_test.c'],
+    'top_view': ['platform/3ds/source/top_view_3ds.c', 'platform/3ds/tests/top_view_3ds_test.c'],
+    'ppu_overlays': ['port/ppu/src/mode1.c', 'port/ppu/tests/mode1_native_fast_path_test.c'],
     'overlay_restore': ['tools/korean/overlay_restore_test.c', 'src/gameUtils.c', 'src/manager/weatherChangeManager.c'],
     'profile': ['tools/korean/profile_test.c'],
     'bottom_touch': ['tools/korean/bottom_touch_test.c', 'platform/3ds/source/bottom_frame_state_3ds.c'],
@@ -37,13 +39,16 @@ def main():
              '-DPORT_SAVE_TEST', '-ffunction-sections', '-fdata-sections']
     if '--sanitize' in sys.argv:
         flags += ['-fsanitize=address,undefined', '-fno-omit-frame-pointer', '-fno-sanitize-recover=all']
-    for inc in ('.', 'include', 'port', 'platform/3ds/source'):
+    for inc in ('.', 'include', 'port', 'port/ppu/include', 'platform/3ds/source'):
         flags += ['-I', str(ROOT / inc)]
     flags += ['-Wl,-dead_strip' if sys.platform == 'darwin' else '-Wl,--gc-sections']
     for name, sources in TESTS.items():
         binary = out / name
         # The existing snapshot test is a single-region engine fixture.
         defines = [] if name == 'second_screen_state' else ['-DMULTI_REGION']
+        if name == 'ppu_overlays':
+            defines += ['-UTMC_3DS', '-DMODE1_GBA_WIDTH=400', '-DMODE1_GBA_HEIGHT=240',
+                        '-DVIRTUAPPU_TESTING']
         command = [os.environ.get('CC', 'cc'), *flags, *defines,
                    *(str(ROOT / src) for src in sources), '-lm', '-o', str(binary)]
         subprocess.run(command, cwd=ROOT, check=True)

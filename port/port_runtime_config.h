@@ -265,9 +265,6 @@ void Port_Config_Cycle3DSAspectRatio(void);
 int Port_Config_Get3DSDisplayStyle(void);
 const char* Port_Config_Get3DSDisplayStyleName(void);
 void Port_Config_Cycle3DSDisplayStyle(void);
-/* Experimental presentation gate only. It does not add a persisted enum or
- * INI key: New 3DS + the existing Wide + Pixel Perfect selections opt in. */
-bool Port_Config_3DSFullViewComboEnabled(void);
 
 /* New 3DS C-stick turbo multiplier. The device supports 2x through 5x and
  * applies changes immediately to the frame-boundary scheduler. */
@@ -356,7 +353,7 @@ bool Port_Config_SoftSlotPressed(int slot);
  * the range [-1, 1] per axis (positive Y = downward on screen, matching
  * TMC's top-left coord system). Returns false with outputs untouched
  * when no pad is attached. Used by the 360° analog movement toggle in
- * src/code_0805EC04.c::UpdatePlayerInput. */
+ * engine/src/code_0805EC04.c::UpdatePlayerInput. */
 bool Port_Config_GetLeftStick(float* outX, float* outY);
 
 /* 360° analog-movement deadzone magnitude, range [0..0.95]. Left-stick
