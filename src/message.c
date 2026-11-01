@@ -576,6 +576,24 @@ static void TextDispUpdate(TextRender* this) {
     }
 }
 
+#ifdef PC_PORT
+/* Look ahead on a token copy: colour controls and substituted names may be
+ * part of the word, but the live decoder, choice result and timing stay put.
+ * An overlong unbroken word still uses the glyph-fit safety path below. */
+static u32 KoreanWordWidth(const TextRender* this, u32 first) {
+    Token preview = this->curToken;
+    u32 width = Port_TextGlyphWidth(first, &this->_50);
+    for (u32 count = 0; count < 256 && width <= 208; ++count) {
+        u32 character = GetCharacter(&preview);
+        if (character == 0 || character == 1 || character == 12 || character == 0x120)
+            break;
+        if (character >> 8)
+            width += Port_TextGlyphWidth(character, &this->_50);
+    }
+    return width;
+}
+#endif
+
 u16 RunTextCommand(TextRender* this) {
     u32 chr = this->curToken.extended;
     s32 temp;
@@ -701,8 +719,19 @@ u16 RunTextCommand(TextRender* this) {
         gMessage.unk = 0x80;
     }
 #ifdef PC_PORT
-    if (gPortKoreanRom && (s32)Port_TextGlyphWidth(chr, &this->_50) >
-                             (s32)this->_50.unk4 - this->_50.unk6) {
+    const s32 remainingWidth = (s32)this->_50.unk4 - this->_50.unk6;
+    bool32 wrapWord = FALSE;
+    if (gPortKoreanRom && chr == 0x120 && remainingWidth <= 0) {
+        /* A separating space at a full line is not an indented next line. */
+        this->curToken.extended = 0;
+        this->_97 = 1;
+        return 0;
+    }
+    if (gPortKoreanRom && this->_97 && chr != 0x120 && gUnk_02000040.unk_00 != 1) {
+        const u32 wordWidth = KoreanWordWidth(this, chr);
+        wrapWord = wordWidth <= 208 && (s32)wordWidth > remainingWidth;
+    }
+    if (gPortKoreanRom && (wrapWord || (s32)Port_TextGlyphWidth(chr, &this->_50) > remainingWidth)) {
         /* Keep the decoded character pending: GetCharacter may have consumed
          * several bytes or entered a substituted name/number stream. Rewinding
          * a byte pointer would lose that state. The regular page-advance path
@@ -718,6 +747,10 @@ u16 RunTextCommand(TextRender* this) {
     }
 #endif
     this->curToken.extended = 0;
+#ifdef PC_PORT
+    if (gPortKoreanRom)
+        this->_97 = chr == 0x120;
+#endif
     if (chr >> 8 ==
 #ifdef PC_PORT
         (gPortKoreanRom ? 3 : 7)
@@ -864,6 +897,10 @@ static void TextDispDie(TextRender* this) {
 
 static void MsgChangeLine(u32 lineNo) {
     gTextRender._98.bytes.lineNo = lineNo;
+#ifdef PC_PORT
+    if (gPortKoreanRom)
+        gTextRender._97 = 1;
+#endif
     if (lineNo == 0) {
         MemFill32(0xFFFFFFFF, gTextGfxBuffer, sizeof(gTextGfxBuffer));
         DrawCanvasLine();

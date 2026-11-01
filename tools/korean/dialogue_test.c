@@ -14,8 +14,12 @@ int gActiveRegion = TMC_REGION_JP;
 static unsigned reads, drawn, centeredWidth;
 static u32 nextChar = 0x401;
 static u32 drawnCodes[128];
-u32 GetCharacter(Token* t) { ++reads; return nextChar; }
-u32 Port_TextGlyphWidth(u32 c, const WStruct* w) { return c >= 0x300 ? 16 : 8; }
+static const u32* stream;
+u32 GetCharacter(Token* t) {
+    if (t == &gTextRender.curToken) ++reads;
+    return stream ? stream[t->_6++] : nextChar;
+}
+u32 Port_TextGlyphWidth(u32 c, const WStruct* w) { return c == 0x120 ? 4 : c >= 0x300 ? 16 : 8; }
 u32 sub_0805F7DC(u32 c, WStruct* w) {
     u32 width = Port_TextGlyphWidth(c, w);
     assert(w->unk6 + width <= w->unk4);
@@ -49,8 +53,10 @@ static void Reset(void) {
     gTextRender._98.bytes.b1 = 2;
     gTextRender.renderStatus = RENDER_UPDATE;
     gTextRender._50.unk4 = 208;
+    gTextRender._97 = 1;
     reads = drawn = 0;
     nextChar = 0x401;
+    stream = NULL;
 }
 
 int main(void) {
@@ -66,6 +72,38 @@ int main(void) {
     }
     assert(reads == 65 && drawn == 65);
     for (unsigned i = 0; i < drawn; ++i) assert(drawnCodes[i] == 0x401);
+    Reset();
+    /* A three-syllable word (the player's Tabanta example) cannot start in
+     * a one-glyph gap. Keep the entire word on the next line/page. */
+    static const u32 word[] = {0xCCD, 0x78A, 0xCCD, 0x120, 0};
+    stream = word;
+    gTextRender._50.unk6 = 192;
+    RunTextCommand(&gTextRender);
+    assert(drawn == 0 && reads == 1 && gTextRender._98.bytes.lineNo == 1);
+    for (unsigned i = 0; i < 3; ++i) RunTextCommand(&gTextRender);
+    assert(drawn == 3 && reads == 3 && gTextRender._50.unk6 == 256);
+    for (unsigned i = 0; i < 3; ++i) assert(drawnCodes[i] == word[i]);
+    Reset();
+    stream = word;
+    gTextRender._98.bytes.lineNo = 1;
+    gTextRender._50.unk4 = 416;
+    gTextRender._50.unk6 = 400;
+    RunTextCommand(&gTextRender);
+    assert(drawn == 0 && reads == 1 && gTextRender.renderStatus == RENDER_WAIT);
+    TextDispRoll(&gTextRender);
+    RunTextCommand(&gTextRender);
+    assert(drawn == 1 && reads == 1 && drawnCodes[0] == word[0]);
+    Reset();
+    nextChar = 0x120;
+    gTextRender._50.unk6 = 208;
+    RunTextCommand(&gTextRender);
+    assert(drawn == 0 && gTextRender._50.unk6 == 208 && gTextRender._97);
+    Reset();
+    stream = word;
+    gUnk_02000040.unk_00 = 1;
+    gTextRender._50.unk6 = 192;
+    RunTextCommand(&gTextRender);
+    assert(drawn == 1 && gTextRender._98.bytes.lineNo == 0);
     Reset();
     gTextRender._50.unk6 = 207;
     RunTextCommand(&gTextRender);
@@ -100,6 +138,6 @@ int main(void) {
     RunTextCommand(&gTextRender);
     assert(gMessageChoices.choiceCount == 1 && gMessageChoices.unk_10[0] == 0x1234);
     assert(gMessageChoices.unk_08[0] == 0 && gTextRender._50.unk6 == 8);
-    puts("PASS: production Korean dialogue wrapping, pending glyphs, centering, line/page and choice controls");
+    puts("PASS: production Korean word/page wrapping, pending glyphs, centering, authored newlines and choice controls");
     return 0;
 }

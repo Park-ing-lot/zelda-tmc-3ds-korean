@@ -1,5 +1,26 @@
 # K0.6: dialogue choices, text overflow and menu-return graphics
 
+## K0.8: preserve words when an authored line is too long
+
+K0.6 prevented missing characters with a glyph-by-glyph overflow guard. That
+was insufficient for readable layout: a place name such as Tabanta could
+begin at the end of one line and continue on the next. The player reported
+this on hardware after K0.7.
+
+The supported ROM retains explicit newlines and also contains authored lines
+wider than the 208px dialogue canvas (for example, text `0C36`). K0.8 keeps
+those explicit newlines, and only reflows an overlong line at a space before
+the next whole word. A copied token measures the word without consuming the
+live stream, changing colour/delay controls, or disturbing substituted text.
+Choice labels retain their cursor positions. A single unbroken word wider
+than the entire canvas still needs the glyph-fit fallback to avoid losing
+characters. This is a compatibility reflow of overlong lines, not a claim to
+reproduce the translation's original GBA layout exactly.
+
+The production dialogue regression covers the reported three-syllable place
+name at both line and page boundaries, authored newlines, end-of-line spaces,
+overlong unbroken words and choice-label behaviour.
+
 ## K0.7 follow-up: fixed Save/Continue option panels
 
 Runtime input testing exposed a separate renderer: `SetPopupState` draws

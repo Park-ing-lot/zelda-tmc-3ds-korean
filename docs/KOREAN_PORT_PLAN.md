@@ -1,6 +1,6 @@
 # Korean ROM support plan
 
-Current update: [K0.6 fixes, K0.7 popup layout and upstream adaptation](KOREAN_K06_FIXES.md).
+Current update: [K0.8 word-preserving dialogue layout and earlier fixes](KOREAN_K06_FIXES.md).
 The player now reports gameplay on a physical Korean 3DS; this does not yet
 confirm K0.6 or a full-game playthrough.
 

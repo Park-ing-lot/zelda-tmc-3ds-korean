@@ -63,7 +63,7 @@ typedef struct {
     u8 _94;
     u8 delay;
     u8 _96;
-    u8 _97;
+    u8 _97; /* PC Korean renderer: next printable character begins a word. */
     union {
         u32 word;
         struct {
