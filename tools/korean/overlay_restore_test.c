@@ -5,11 +5,14 @@
 #include "main.h"
 #include "room.h"
 #include "screen.h"
+#include "save.h"
+#include "flags.h"
 #include "manager/weatherChangeManager.h"
 #include "manager/animatedBackgroundManager.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 int gActiveRegion;
 Screen gScreen;
@@ -19,8 +22,10 @@ RoomVars gRoomVars;
 PlayerEntity gPlayerEntity;
 MapLayer gMapBottom, gMapTop;
 Area gArea;
+SaveFile gSave;
 LinkedList gEntityLists[9];
 u8 gEwram[0x40000];
+u8 gTextGfxBuffer[0xD00];
 u16 gPaletteBuffer[0x200], gPalette_549[0x1A0];
 u8 gPaletteBufferBackup[0x400];
 u32 gUsedPalettes;
@@ -40,6 +45,11 @@ u32 GetInventoryValue(u32 n) { return 0; }
 void CleanUpGFXSlots(void) {}
 void sub_080ADE24(void) {}
 void InitUI(bool32 n) {}
+/* GCC ASan also retains the unused timer callback table in gameUtils.c. */
+bool32 CheckLocalFlagByBankB(u32 bank, u32 flag) { abort(); }
+void ClearLocalFlagByBankB(u32 bank, u32 flag) { abort(); }
+void ClearGlobalFlag(u32 flag) { abort(); }
+void MenuFadeIn(u32 state, u32 param) { abort(); }
 void LoadStaticBackground(u32 n) { LoadGfxGroup(20); }
 void LoadResourceAsync(const void* s, void* d, u32 n) {
     assert((uintptr_t)d == 0x600E800);

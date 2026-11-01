@@ -8,6 +8,8 @@
 #include "game.h"
 #include "save.h"
 #include "sound.h"
+#include "screen.h"
+#include "port_gba_mem.h"
 #include "port_second_screen_3ds.h"
 #include <stdio.h>
 
@@ -90,11 +92,13 @@ void KoreanRuntimeProbe_Frame(void) {
         int tab, page;
         Port_SecondScreen_3DS_ProbeUi(&tab, &page);
         fprintf(state, "frames=%u task=%u state=%u substate=%u tab=%d page=%d area=%02X room=%02X "
-                "text=%04X msg=%u render=%u line=%u x=%u limit=%u choice=%d saveSlot=%u\n",
+                "text=%04X msg=%u render=%u line=%u x=%u limit=%u choice=%d saveSlot=%u "
+                "savePtr=%p vramPtr=%p bg1=%04X bg2=%04X bg3=%04X\n",
                 frames, gMain.task, gMain.state, gMain.substate, tab, page,
                 gRoomControls.area, gRoomControls.room, gTextRender.curToken.textIndex,
                 gMessage.state, gTextRender.renderStatus, gTextRender._98.bytes.lineNo,
-                gTextRender._50.unk6, gTextRender._50.unk4, sub_08056338(), gSaveHeader->saveFileId);
+                gTextRender._50.unk6, gTextRender._50.unk4, sub_08056338(), gSaveHeader->saveFileId,
+                (void*)&gSave, (void*)gVram, gScreen.bg1.control, gScreen.bg2.control, gScreen.bg3.control);
         fclose(state);
     }
 }
