@@ -4,6 +4,8 @@
 
 Message gMessage;
 TextRender gTextRender;
+SaveFile gSave;
+u8 gEwram[0x40000];
 struct_02000040 gUnk_02000040;
 Input gInput;
 u8 gTextGfxBuffer[0xD00];
@@ -27,6 +29,12 @@ u32 GetFontStrWith(Token* t, u32 n) { return centeredWidth; }
 void WriteBit(u32* p, u32 b) { *p |= 1u << b; }
 void SoundReq(u32 s) {}
 void MemClear(void* p, u32 n) { memset(p, 0, n); }
+/* GCC's ASan retains the message dispatch table. Its unused initialization
+ * handlers must link too, and must fail loudly if the fixture enters them. */
+void MemCopy(const void* s, void* d, u32 n) { memcpy(d, s, n); }
+u32 DecToHex(u32 n) { abort(); }
+void sub_0805EEB4(Token* t, u32 id) { abort(); }
+bool32 sub_0805EF40(Token* t, const u8* s) { abort(); }
 void MemFill32(u32 v, void* p, u32 n) { memset(p, 0xff, n); }
 void LoadResourceAsync(const void* s, void* d, u32 n) {}
 void sub_0805F918(u32 a, u32 b, void* p) {}
