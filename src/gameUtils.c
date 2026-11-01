@@ -171,6 +171,21 @@ void SetPopupState(u32 type, u32 choice_idx) {
     opt = &sPopupOptions[type];
     font.dest = sDefaultFont.dest + (opt->dest_off[gSaveHeader->language] + opt->_8 * 32);
     font.right_align = opt->right_align;
+#ifdef PC_PORT
+    if (gPortKoreanRom && type < 2) {
+        /* Save/continue options use a fixed stone panel, not the scrolling
+         * dialogue renderer. Its content spans x=56..184. The original
+         * English/Japanese anchor at x=88 lets the longer Korean negative
+         * choice escape the panel even though the 224px canvas accepts it.
+         * Center the widest option as one left-aligned block, preserving a
+         * common cursor column and every character of both choices. */
+        const u32 textWidth = Port_TextMeasureText(opt->_a);
+        const u32 padding = textWidth < 128 ? (128 - textWidth) / 2 : 0;
+        const u32 column = 7 + padding / 8;
+        font.dest = sDefaultFont.dest + column + opt->_8 * 32;
+        font.width = 184 - column * 8;
+    }
+#endif
     ShowTextBox(opt->_a, &font);
     gScreen.bg1.updated = fakematch;
 }

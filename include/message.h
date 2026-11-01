@@ -81,6 +81,11 @@ typedef struct {
 extern TextRender gTextRender;
 PORT_STATIC_ASSERT_SIZE(TextRender, 0xa8, 0xD8, "TextRender size incorrect");
 
+#ifdef PC_PORT
+/* Maximum rendered line width, including substituted text/choice markers. */
+u32 Port_TextMeasureText(uintptr_t textIndexOrPtr);
+#endif
+
 /**
  * @brief Initialize the message system.
  */

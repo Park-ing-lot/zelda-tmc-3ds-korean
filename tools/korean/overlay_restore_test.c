@@ -7,6 +7,7 @@
 #include "screen.h"
 #include "save.h"
 #include "flags.h"
+#include "fileselect.h"
 #include "manager/weatherChangeManager.h"
 #include "manager/animatedBackgroundManager.h"
 #include <assert.h>
@@ -15,6 +16,7 @@
 #include <stdlib.h>
 
 int gActiveRegion;
+int gPortKoreanRom;
 Screen gScreen;
 RoomControls gRoomControls;
 RoomTransition gRoomTransition;
@@ -26,6 +28,11 @@ SaveFile gSave;
 LinkedList gEntityLists[9];
 u8 gEwram[0x40000];
 u8 gTextGfxBuffer[0xD00];
+struct_020227E8 gUnk_020227E8[1];
+u8 gUnk_020227F0[8], gUnk_020227F8[8], gUnk_02022800[8];
+static Font popupFont;
+u32 Port_TextMeasureText(uintptr_t id) { return id == 16 ? 120 : 107; }
+u32 ShowTextBox(uintptr_t id, const Font* font) { popupFont = *font; return 0; }
 u16 gPaletteBuffer[0x200], gPalette_549[0x1A0];
 u8 gPaletteBufferBackup[0x400];
 u32 gUsedPalettes;
@@ -73,6 +80,30 @@ void sub_08016CA8(BgSettings* bg) {
 }
 
 int main(void) {
+    /* Exercise the production popup caller for both selections and regions.
+     * Widths are the independently measured Korean Save/Continue fixtures;
+     * the ROM differential tool checks those measurements separately. */
+    for (unsigned region = 0; region < 3; ++region) {
+        gPortKoreanRom = region == TMC_REGION_JP;
+        gSaveHeader->language = gPortKoreanRom ? 0 : 1;
+        for (unsigned type = 0; type < 2; ++type) {
+            for (unsigned choice = 0; choice < 2; ++choice) {
+                SetPopupState(type, choice);
+                const unsigned column = (popupFont.dest - gBG1Buffer) % 32;
+                if (gPortKoreanRom) {
+                    assert(column >= 7 && column * 8 + popupFont.width <= 184);
+                    assert(Port_TextMeasureText(type == 0 ? 16 : 17) <= popupFont.width);
+                } else {
+                    assert(column == 11 && popupFont.width == 224);
+                }
+                assert(GetTextVariableSlot(choice)->_0.BYTES.byte1 == 1);
+            }
+        }
+        SetPopupState(2, 0);
+        assert((popupFont.dest - gBG1Buffer) % 32 == 15);
+        assert(popupFont.right_align && popupFont.width == 224);
+    }
+    puts("PASS: production Save/Continue option blocks fit the Korean panel; USA/EU/Sleep layout preserved");
     for (unsigned cycle = 0; cycle < 256; ++cycle) {
         memset(&gScreen, 0, sizeof(gScreen));
         gScreen.bg1.subTileMap = gBG1Buffer;

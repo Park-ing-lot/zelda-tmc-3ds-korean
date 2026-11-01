@@ -629,6 +629,14 @@ void InitToken(Token* token, uintptr_t textIndexOrPtr) {
     }
 }
 
+#ifdef PC_PORT
+u32 Port_TextMeasureText(uintptr_t textIndexOrPtr) {
+    Token token;
+    InitToken(&token, textIndexOrPtr);
+    return GetFontStrWith(&token, 1) & 0xFFFF;
+}
+#endif
+
 u32 ShowTextBox(uintptr_t textIndexOrPtr, const Font* paramFont) {
     u32 uVar1;
     WStruct* pWVar4;

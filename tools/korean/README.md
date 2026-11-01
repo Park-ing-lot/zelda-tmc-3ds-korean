@@ -16,8 +16,11 @@ functions against the original ARM routines in that ROM. It executes the
 original decoder, font lookup, stylized lookup and width calculation; only
 the GBA DMA copy hardware effect is supplied by the test harness.
 
-Expected result: **18,825 comparisons**, all matching. This does not exercise
-the complete game, menus, saved games or 3DS hardware.
+Expected result: **18,825 ARM differential comparisons** and **3 explicit
+Korean choice compatibility cases**, plus **4 popup width cases** (18,832
+total). The choice correction
+intentionally differs from the translation's retained, incompatible ARM
+sentinel handling. This does not exercise the complete game or 3DS hardware.
 
 ## European text regression
 
@@ -67,3 +70,15 @@ requires the supported ROM revisions and writes no extracted assets. See
 Opt-in diagnostic builds also accept one local `probe-touch.txt` containing
 `x y` in native 320×240 coordinates, and log the actual touch handler's state
 changes/rejections. Production packages exclude all probe hooks.
+
+K0.6 diagnostic builds additionally accept `probe-dialog.txt` containing a
+hex text ID, or `probe-room.txt` containing hex area/room IDs and decimal
+room-relative x/y coordinates. These commands run only during ordinary
+gameplay. Room commands are development fixtures and must only be used with
+an isolated copy of the SD/save, never a player's live progress. Extended
+state observations include dialogue status and native save/VRAM addresses for
+local emulator checks. Normal CIA/3DSX builds contain none of these commands.
+
+The host suite now runs 21 programs, including production dialogue/choice
+decoding, Crenel menu-return graphics, real animated save results, and the
+upstream 4,096-scene PPU parity suite. See [K0.6 details](../../docs/KOREAN_K06_FIXES.md).

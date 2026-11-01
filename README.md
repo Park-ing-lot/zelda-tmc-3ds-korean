@@ -8,7 +8,7 @@ This is an **experimental fork** of [EstebanPdN/zelda-tmc-3ds](https://github.co
 
 **Development prototype. The player reports working gameplay on a physical Korean 3DS, with dialogue and graphics problems addressed in K0.6. K0.6 hardware confirmation and a complete ending playthrough are still pending.**
 
-K0.6 corrects Korean NPC choices that incorrectly opened the system's save-error text, preserves long dialogue across lines/pages, and prevents ordinary map restoration from overwriting weather overlays. It also adapts upstream's removal of the experimental camera. See the [K0.6 investigation and validation](docs/KOREAN_K06_FIXES.md) for causes, upstream provenance, tests and remaining limits.
+K0.7 also fixes the fixed Save/Continue option panel: its Korean negative choice previously extended beyond the panel despite ordinary dialogue wrapping correctly. It preserves complete labels and a shared cursor column inside the panel. K0.6's NPC choice, dialogue overflow, overlay restoration and upstream camera stabilization fixes are included. See the [investigation and validation](docs/KOREAN_K06_FIXES.md) for causes, upstream provenance, tests and remaining limits.
 
 The initial Korean changes build to CIA and 3DSX. Local comparisons of the production C code against the translation's original ARM routines pass 18,825 cases covering character decoding, glyph addresses, stylized lookup, and variable-width measurement. Another 62,756 text comparisons using the clean European ROM match the unmodified upstream C implementation. These are text-system tests, not full-game regression tests.
 

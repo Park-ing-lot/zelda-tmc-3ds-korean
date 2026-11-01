@@ -81,6 +81,18 @@ int main(int argc, char** argv) {
             u32 following = GetCharacter(&token);
             printf("%x %x %x %x %x\n", code, consumed, target, following,
                    (unsigned)(token.buf[0] - bytes));
+        } else if (mode == 'P') {
+            u8 slots[5][8] = {{0}};
+            for (unsigned i = 1; i < 5; ++i) {
+                slots[i][0] = 0x0F;
+                slots[i][1] = i == b + 1;
+                gTextVariableSources[i] = slots[i];
+            }
+            gTranslations[0] = (u32*)(gRomData + PORT_KOREAN_TRANSLATION);
+            Token token;
+            gSaveHeader->language = 0;
+            InitToken(&token, a);
+            printf("%x\n", GetFontStrWith(&token, 1));
         } else return 4;
     }
     free(gRomData);

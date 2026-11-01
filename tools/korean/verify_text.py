@@ -130,6 +130,14 @@ def main():
     cases.append('C 46 5f 41 0\n')
     expected.append((12, 3, 0x465F, 0x141, 4))
     categories['choice_compatibility'] = 3
+    # The fixed Save/Continue panel has 128px of usable width. Measure the
+    # real translated lines, including selected/unselected cursor variables,
+    # so moving the block never merely hides its final characters.
+    for text, width in ((0x10, 0x01020078), (0x11, 0x0102006B)):
+        for choice in (0, 1):
+            cases.append(f'P {text:x} {choice:x} 0 0\n')
+            expected.append((width,))
+    categories['popup_layout'] = 4
 
     with tempfile.TemporaryDirectory(prefix='tmc-korean-') as temp:
         probe = pathlib.Path(temp) / 'text-probe'

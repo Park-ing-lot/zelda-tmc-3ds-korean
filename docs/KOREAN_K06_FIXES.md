@@ -1,5 +1,21 @@
 # K0.6: dialogue choices, text overflow and menu-return graphics
 
+## K0.7 follow-up: fixed Save/Continue option panels
+
+Runtime input testing exposed a separate renderer: `SetPopupState` draws
+the Save/Continue options directly into a fixed stone panel. Its original
+224px canvas began at x=88; the Korean negative Save label extended past the
+panel even after scrolling dialogue had been fixed. The player correctly
+identified this remaining overflow while watching the emulator.
+
+The supported ROM's complete Save and Continue option blocks measure 120px
+and 107px, including the cursor substitution. K0.7 measures those lines and
+centers each block within the panel's x=56..184 content area. Both choices
+retain a common left/cursor column; the canvas ends within the panel and
+contains every character. USA/EU and the separate Sleep layout are retained.
+The production popup caller is tested for both choices and regions, and the
+local ROM checks assert all four actual option-width measurements.
+
 This is a compatibility update to EstebanPdN's native port. It does not create
 or redistribute the game or Francine's Korean translation. Players supply
 their own ROM. No save files or game assets are included in the tests.
@@ -88,3 +104,24 @@ overwrite Korean support.
 Physical-hardware verification of K0.6, every NPC, every overlay region and a
 complete ending playthrough remain separate acceptance checks. The user's
 original emulator save was backed up and is never used for destructive tests.
+
+## K0.6 runtime evidence
+
+Diagnostic build [41306496950](https://github.com/Park-ing-lot/zelda-tmc-3ds-korean/actions/runs/41306496950)
+ran in Azahar 2126.2 with a separate virtual SD. Scripted input entered
+Swiftblade's actual room, spoke to the NPC, accepted training and the
+understanding question, and reached the following possession explanation
+(`4604`) without a system save-error detour. This was not a completed training
+or full-game playthrough.
+
+On Mount Crenel (`06/00`), actual SELECT/Ezlo dialogue, START menu, world map
+and detail-map return paths preserved the ash tilemap. Its 2,048 bytes at
+VRAM `E800` matched byte-for-byte before and after those paths. Cloud Tops
+(`08/00`) also restored its BG3 cloud map through pause and SELECT dialogue.
+These are tests at specific positions, not proof of every overlay room.
+
+All 16 bottom-screen item cells reached their expected native equipment
+values. A subsequent B-ring/sword tap updated B to sword; Quest/Map/Items,
+Settings, Screen and Back taps completed without a generation rejection in
+this sequence. Runtime captures and test saves stay local and are not
+redistributed.
