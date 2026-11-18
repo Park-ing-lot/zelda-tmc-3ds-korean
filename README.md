@@ -2,6 +2,8 @@
 
 This is an **experimental fork** of [EstebanPdN/zelda-tmc-3ds](https://github.com/EstebanPdN/zelda-tmc-3ds), maintained in this repository by [Park-ing-lot](https://github.com/Park-ing-lot).
 
+**한국어: [간단 설치·사용 설명서](docs/INSTALL_KO.md) · [CIA 릴리스 다운로드](https://github.com/Park-ing-lot/zelda-tmc-3ds-korean/releases/latest)**
+
 **We did not create the native 3DS port.** The native engine integration, dual-screen interface, renderer, audio implementation, and existing USA/European support come from the upstream project and its contributors. This fork adapts it to the specific Korean fan-translated GBA ROM revisions listed below on a homebrew-enabled Korean Nintendo 3DS.
 
 ## Current status
