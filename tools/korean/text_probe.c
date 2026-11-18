@@ -22,6 +22,7 @@ u8* gTextVariableSources[5];
 u32 gUnk_08109244;
 u32* gUnk_08109248[9];
 u8 gUnk_081092D4[346];
+u8 gUnk_0810942E[160], gUnk_081094CE[1378];
 
 const void* port_resolve_copy_src(const void* p, u32 n) { (void)n; return p; }
 void Port_LogTextLookup(u32 lang, u32 text) { (void)lang; (void)text; }
@@ -47,7 +48,9 @@ int main(int argc, char** argv) {
     }
 #else
     if (!Port_KoreanRomHasLayout(gRomData, gRomSize)) return 3;
-    memcpy(gUnk_081092D4, gRomData + PORT_KOREAN_STYLE_TABLE, sizeof(gUnk_081092D4));
+    memcpy(gUnk_081092D4, gRomData + Port_KoreanStyleTableOffset(gRomSize), sizeof(gUnk_081092D4));
+    memcpy(gUnk_0810942E, gRomData + 0x1090F2, sizeof(gUnk_0810942E));
+    memcpy(gUnk_081094CE, gRomData + 0x109192, sizeof(gUnk_081094CE));
 #endif
     char mode;
     unsigned a, b, c, style;
@@ -81,7 +84,26 @@ int main(int argc, char** argv) {
             u32 following = GetCharacter(&token);
             printf("%x %x %x %x %x\n", code, consumed, target, following,
                    (unsigned)(token.buf[0] - bytes));
-        } else if (mode == 'P') {
+        }
+#ifndef TMC_TEST_EU
+        else if (mode == 'R') {
+            gSaveHeader->language = 0;
+            u8 pixels[1024];
+            memset(pixels, 0x55, sizeof(pixels));
+            WStruct canvas = {0};
+            canvas.unk04 = style & 1;
+            canvas.unk1 = (style >> 1) & 1;
+            canvas.charColor = 2;
+            canvas.unk4 = c;
+            canvas.unk6 = b;
+            canvas.unk8 = pixels;
+            sub_0805F7DC(a, &canvas);
+            printf("%x ", canvas.unk6);
+            for (unsigned i = 0; i < sizeof(pixels); ++i) printf("%02x", pixels[i]);
+            putchar('\n');
+        }
+#endif
+        else if (mode == 'P') {
             u8 slots[5][8] = {{0}};
             for (unsigned i = 1; i < 5; ++i) {
                 slots[i][0] = 0x0F;

@@ -1756,7 +1756,7 @@ void Port_LoadRom(const char* path) {
     /* Font/text data tables — from active ROM */
     memcpy(gUnk_08109244, &gRomData[R->text09244], 4);
     memcpy(gUnk_0810926C, &gRomData[R->text0926C], 64);
-    memcpy(gUnk_081092D4, &gRomData[gPortKoreanRom ? PORT_KOREAN_STYLE_TABLE : R->text092D4], 346);
+    memcpy(gUnk_081092D4, &gRomData[gPortKoreanRom ? Port_KoreanStyleTableOffset(gRomSize) : R->text092D4], 346);
     memcpy(gUnk_0810942E, &gRomData[R->text0942E], 160);
     memcpy(gUnk_081094CE, &gRomData[R->text094CE], 1378);
 

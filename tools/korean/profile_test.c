@@ -7,7 +7,7 @@ static void write32(uint8_t* p, uint32_t x) {
 }
 
 int main(void) {
-    uint8_t* rom = calloc(1, PORT_KOREAN_ROM_SIZE);
+    uint8_t* rom = calloc(1, PORT_KOREAN_V11_ROM_SIZE);
     assert(rom);
     assert(!Port_KoreanRomHasLayout(NULL, PORT_KOREAN_ROM_SIZE));
     for (size_t n = 0; n < 0xB0; ++n) assert(!Port_KoreanRomHasLayout(rom, n));
@@ -32,6 +32,15 @@ int main(void) {
     write32(rom + PORT_KOREAN_FONT_TABLE + 9 * 4, 0x08000000u + PORT_KOREAN_ROM_SIZE - 128);
     assert(Port_KoreanGlyphOffset(rom, PORT_KOREAN_ROM_SIZE, 0x900, 0) == PORT_KOREAN_ROM_SIZE - 128);
     assert(Port_KoreanGlyphOffset(rom, PORT_KOREAN_ROM_SIZE, 0x901, 0) == UINT32_MAX);
+
+    /* v1.1 keeps the text/font bank locations but relocates the stylized map.
+     * A legacy map with a 16 MiB file must not masquerade as this revision. */
+    write32(rom + 0x5F104, 0x08000000u + PORT_KOREAN_FONT_TABLE);
+    assert(!Port_KoreanRomHasLayout(rom, PORT_KOREAN_V11_ROM_SIZE));
+    write32(rom + 0x5F804, 0x08000000u + PORT_KOREAN_V11_STYLE_TABLE);
+    assert(Port_KoreanRomHasLayout(rom, PORT_KOREAN_V11_ROM_SIZE));
+    assert(!Port_KoreanRomHasLayout(rom, PORT_KOREAN_ROM_SIZE));
+    assert(!Port_KoreanRomHasLayout(rom, PORT_KOREAN_V11_ROM_SIZE - 1));
     free(rom);
     return 0;
 }

@@ -10,8 +10,11 @@
  * No game assets are compiled into this header. */
 #define PORT_KOREAN_ROM_SIZE 15365627u
 #define PORT_KOREAN_ROM_SHA256 "70fd38bd851ab48034fdab04be13ced3ef8a5d95344318ddc98d3d5417830b90"
+#define PORT_KOREAN_V11_ROM_SIZE 16777216u
+#define PORT_KOREAN_V11_ROM_SHA256 "ca939966543e9073f2fdaaa42b163b7ca62be26ec6af931fc07151c93da84688"
 #define PORT_KOREAN_FONT_TABLE 0xDC9F00u
 #define PORT_KOREAN_STYLE_TABLE 0xE4F000u
+#define PORT_KOREAN_V11_STYLE_TABLE 0xE57C00u
 #define PORT_KOREAN_TRANSLATION 0xE60000u
 
 extern int gPortKoreanRom;
@@ -20,14 +23,18 @@ static inline uint32_t Port_KoreanRead32(const uint8_t* p) {
     return (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 | (uint32_t)p[3] << 24;
 }
 
+static inline uint32_t Port_KoreanStyleTableOffset(size_t size) {
+    return size == PORT_KOREAN_V11_ROM_SIZE ? PORT_KOREAN_V11_STYLE_TABLE : PORT_KOREAN_STYLE_TABLE;
+}
+
 /* Structural recognition for the native loader. The 3DS frontend additionally
  * verifies the full SHA-256 before accepting this JP-header ROM. */
 static inline int Port_KoreanRomHasLayout(const uint8_t* rom, size_t size) {
-    return rom && size == PORT_KOREAN_ROM_SIZE &&
+    return rom && (size == PORT_KOREAN_ROM_SIZE || size == PORT_KOREAN_V11_ROM_SIZE) &&
            memcmp(rom + 0xAC, "BZMJ", 4) == 0 &&
            Port_KoreanRead32(rom + 0x108ED8) == 0x08000000u + PORT_KOREAN_TRANSLATION &&
            Port_KoreanRead32(rom + 0x5F104) == 0x08000000u + PORT_KOREAN_FONT_TABLE &&
-           Port_KoreanRead32(rom + 0x5F804) == 0x08000000u + PORT_KOREAN_STYLE_TABLE;
+           Port_KoreanRead32(rom + 0x5F804) == 0x08000000u + Port_KoreanStyleTableOffset(size);
 }
 
 /* 0B..0E select banks 4..7. 0F uses a second escape byte:

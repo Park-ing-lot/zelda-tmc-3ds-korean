@@ -22,7 +22,8 @@ def read_rom(path, sha1):
             data = z.read(names[0])
     else:
         data = path.read_bytes()
-    assert hashlib.sha1(data).hexdigest() == sha1, 'Unsupported ROM revision'
+    accepted = (sha1,) if isinstance(sha1, str) else sha1
+    assert hashlib.sha1(data).hexdigest() in accepted, 'Unsupported ROM revision'
     return data
 
 def u32(data, off):
@@ -35,7 +36,8 @@ def rom_pointer(data, address, size):
 
 def main():
     assert len(sys.argv) == 3, __doc__
-    k = read_rom(sys.argv[1], '5dfc388f30bec4db3965632cca8fe1a97d9c9f79')
+    k = read_rom(sys.argv[1], ('5dfc388f30bec4db3965632cca8fe1a97d9c9f79',
+                             '5dd6bdbce68a47bd8dc0599385b85116f6fc9b4b'))
     e = read_rom(sys.argv[2], 'cff199b36ff173fb6faf152653d1bccf87c26fb7')
     text = (ROOT / 'port/port_rom.c').read_text()
     block = text.split('const RomOffsets kRomOffsets_JP = {')[1].split('};')[0]
