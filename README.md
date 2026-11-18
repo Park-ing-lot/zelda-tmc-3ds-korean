@@ -9,6 +9,7 @@ The original native 3DS port is the work of Esteban PDN and contributors. This f
 **테스트한 한글 패치: stygia v1.1 (2026-11-09)**
 
 한글패치된 젤다의전설 이상한모자 ROM은 각자 준비해서 적용해 주세요. 이 저장소와 릴리스에는 포함되어 있지 않습니다.
+
 최신 한글패치법은 [여기](https://blog.naver.com/rnslek89)에서 확인할 수 있습니다. 
 
 1. [릴리스의 CIA](https://github.com/Park-ing-lot/zelda-tmc-3ds-korean/releases/latest)를 FBI로 설치합니다. 아래 QR은 **FBI → Remote Install → Scan QR Code**에서 읽으면 됩니다.
