@@ -22,7 +22,10 @@ concurrency:
 jobs:
   build:
     name: Nintendo 3DS packages
-    runs-on: ubuntu-latest
+    # Keep the host kernel used by the validated sanitizer/container builds.
+    # ubuntu-latest migrated to 26.04; its first ASan process loops on SIGSEGV.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     container:
       image: devkitpro/devkitarm:latest
 

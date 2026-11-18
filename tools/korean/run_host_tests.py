@@ -43,6 +43,7 @@ def main():
         flags += ['-I', str(ROOT / inc)]
     flags += ['-Wl,-dead_strip' if sys.platform == 'darwin' else '-Wl,--gc-sections']
     for name, sources in TESTS.items():
+        print(f'RUN: {name}', flush=True)
         binary = out / name
         # The existing snapshot test is a single-region engine fixture.
         defines = [] if name == 'second_screen_state' else ['-DMULTI_REGION']
@@ -51,7 +52,7 @@ def main():
                         '-DVIRTUAPPU_TESTING']
         command = [os.environ.get('CC', 'cc'), *flags, *defines,
                    *(str(ROOT / src) for src in sources), '-lm', '-o', str(binary)]
-        subprocess.run(command, cwd=ROOT, check=True)
+        subprocess.run(command, cwd=ROOT, check=True, timeout=120)
         # Persistence tests deliberately make directories unwritable. Root
         # bypasses those permissions, so drop privileges for the test child
         # in root-owned CI containers. Do not weaken the fault assertions.
@@ -61,7 +62,7 @@ def main():
                 user = pwd.getpwnam('nobody')
                 os.chown(directory, user.pw_uid, user.pw_gid)
                 options = {'user': user.pw_uid, 'group': user.pw_gid, 'extra_groups': []}
-            subprocess.run([str(binary)], cwd=directory, check=True, **options)
+            subprocess.run([str(binary)], cwd=directory, check=True, timeout=180, **options)
     print(f'PASS: {len(TESTS)} host test programs')
 
 if __name__ == '__main__':
