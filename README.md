@@ -1,4 +1,4 @@
-# The Minish Cap 3DS Korean / 젤다의전설 이상한모자 3DS 한글판
+# 젤다의전설 이상한모자 3DS 한글판
 
 A fork of [EstebanPdN/zelda-tmc-3ds](https://github.com/EstebanPdN/zelda-tmc-3ds), adapted to run Korean-patched GBA ROMs on Nintendo 3DS.
 
